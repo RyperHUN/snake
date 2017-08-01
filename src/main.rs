@@ -1,5 +1,8 @@
-extern crate rand;
+extern crate rand; //For random number generation
 use rand::Rng;
+
+extern crate cgmath;
+use cgmath::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
 enum MapItem {
@@ -38,10 +41,17 @@ impl Map {
 			}
 		}
 		
+		// let map_size = cgmath::vec2{x: 1, y: SIZE - 1};
+		let map_size = cgmath::vec2(1,  SIZE - 1);
+		
 		//Gen random pos for food
-		let i = rng.gen_range(1, SIZE - 1); 
-		let j = rng.gen_range(1, SIZE - 1);
+		let i = rng.gen_range(map_size.x, map_size.y); 
+		let j = rng.gen_range(map_size.x, map_size.y);
 		map[i][j] = MapItem::Food;
+		
+		
+		let center_pos = map_size / 2;
+		map[center_pos.y][center_pos.y] = MapItem::SnakeHead;
 		
 		return Map{array : map};
 	}
