@@ -28,9 +28,14 @@ impl Map {
 						  [MapItem::Wall, MapItem::Food, MapItem::Empty, MapItem::SnakeHead, MapItem::Wall],
 						  [MapItem::Wall, MapItem::Food, MapItem::Empty, MapItem::SnakeHead, MapItem::Wall]]};
 	}
-	
-	pub fn draw (&self) {
-		let ref array = self.array; 
+}
+
+pub struct MapDrawer {
+}
+
+impl MapDrawer {
+	pub fn draw_debug(map : Map) {
+		let ref array = map.array; 
 		//let array = &self.array; //Same as the above line, just another syntax
 		for i in 0..array.len() {
 			for j in 0..array[i].len() {
@@ -41,17 +46,8 @@ impl Map {
 	}
 }
 
-pub struct MapDrawer {
-}
-
-impl MapDrawer {
-	pub fn draw(map : Map) {
-		
-	}
-}
-
 fn main() {
 	let map = Map::new();
 	
-	map.draw();
+	MapDrawer::draw_debug(map);
 }
