@@ -1,3 +1,6 @@
+extern crate rand;
+use rand::Rng;
+
 #[derive(Debug, Copy, Clone)]
 enum MapItem {
 	Wall,
@@ -22,6 +25,7 @@ pub struct Map {
 
 impl Map {
 	pub fn new () -> Map {
+		let mut rng = rand::thread_rng();
 		let mut map : MapType = [[MapItem::Empty; SIZE ]; SIZE];
 		for i in 0..map.len() {
 			for j in 0..map[i].len() {
@@ -33,6 +37,11 @@ impl Map {
 				}
 			}
 		}
+		
+		//Gen random pos for food
+		let i = rng.gen_range(1, SIZE - 1); 
+		let j = rng.gen_range(1, SIZE - 1);
+		map[i][j] = MapItem::Food;
 		
 		return Map{array : map};
 	}
