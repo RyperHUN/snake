@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 enum MapItem {
 	Wall,
 	Food,
@@ -12,7 +12,7 @@ enum MapItem {
 // }
 
 
-const SIZE : usize = 5;	
+const SIZE : usize = 10;	
 type MapType = [[MapItem; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, size]
 											//Dynamic array: Vec<Vec<Type>>
 											
@@ -22,11 +22,19 @@ pub struct Map {
 
 impl Map {
 	pub fn new () -> Map {
-		return Map{ array : [[MapItem::Wall, MapItem::Food, MapItem::Empty, MapItem::SnakeHead, MapItem::Wall],
-						  [MapItem::Wall, MapItem::Food, MapItem::Empty, MapItem::SnakeHead, MapItem::Wall],
-						  [MapItem::Wall, MapItem::Food, MapItem::Empty, MapItem::SnakeHead, MapItem::Wall],
-						  [MapItem::Wall, MapItem::Food, MapItem::Empty, MapItem::SnakeHead, MapItem::Wall],
-						  [MapItem::Wall, MapItem::Food, MapItem::Empty, MapItem::SnakeHead, MapItem::Wall]]};
+		let mut map : MapType = [[MapItem::Empty; SIZE ]; SIZE];
+		for i in 0..map.len() {
+			for j in 0..map[i].len() {
+				if i == 0 || j == 0  || i == SIZE - 1 || j == SIZE - 1 {
+					map[i][j] = MapItem::Wall;
+				}
+				else {
+					map[i][j] = MapItem::Empty;
+				}
+			}
+		}
+		
+		return Map{array : map};
 	}
 }
 
@@ -50,7 +58,7 @@ impl MapDrawer {
 			MapItem::Food => return '0',
 			MapItem::Empty => return ' ',
 			MapItem::SnakeHead | MapItem::SnakePart => return 'x',
-			_ => return '*'
+			// _ => return '*'
 		}
 	}
 	
