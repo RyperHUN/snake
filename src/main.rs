@@ -92,8 +92,16 @@ impl MapDrawer {
 	}
 }
 
+extern crate sdl2;
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+use std::collections::HashSet;
+use std::time::Duration;
+
 fn main() {
 	let map = Map::new();
 	
 	MapDrawer::draw(map);
+	
+	
 }
