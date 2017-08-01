@@ -44,10 +44,25 @@ impl MapDrawer {
 			println!("");
 		}
 	}
+	fn get_char (map_item : &MapItem) -> char {
+		match map_item {
+			_ => return '_'
+		}
+	}
+	
+	pub fn draw(map : Map) {
+		let ref array = map.array; 
+		for i in 0..array.len() {
+			for j in 0..array[i].len() {
+				print!("{}", MapDrawer::get_char(&array[i][j]));
+			}
+			println!("");
+		}
+	}
 }
 
 fn main() {
 	let map = Map::new();
 	
-	MapDrawer::draw_debug(map);
+	MapDrawer::draw(map);
 }
