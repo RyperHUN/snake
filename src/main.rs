@@ -3,6 +3,8 @@ use rand::Rng;
 
 extern crate cgmath;
 use cgmath::prelude::*;
+use cgmath::Vector2;
+use cgmath::vec2;
 
 #[derive(Debug, Copy, Clone)]
 enum MapItem {
@@ -13,9 +15,22 @@ enum MapItem {
 	SnakePart,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 enum SnakeDir {
 	Up,Left,Down, Right
+}
+
+pub struct Snake {
+	dir : SnakeDir,
+	speed : u8, // 1-10 -> [500ms,100ms] refresh
+	pos : Vector2<u32>,
+}
+
+impl Snake {
+	pub fn new (speed : u8, pos : Vector2<u32>) -> Snake
+	{
+		return Snake {dir : SnakeDir::Up, speed : speed, pos : pos};
+	}
 }
 
 
@@ -42,7 +57,6 @@ impl Map {
 			}
 		}
 		
-		// let map_size = cgmath::vec2{x: 1, y: SIZE - 1};
 		let map_size = cgmath::vec2(1,  SIZE - 1);
 		
 		//Gen random pos for food
@@ -51,10 +65,15 @@ impl Map {
 		map[i][j] = MapItem::Food;
 		
 		
-		let center_pos = map_size / 2;
-		map[center_pos.y][center_pos.y] = MapItem::SnakeHead;
-		
 		return Map{array : map};
+	}
+	pub fn add_snake(&mut self) -> Snake {
+		let map_size = vec2(1,  SIZE - 1);
+		
+		let center_pos = map_size / 2;
+		self.array[center_pos.y][center_pos.y] = MapItem::SnakeHead;
+		
+		return Snake::new(1,vec2(center_pos.y as u32, center_pos.y as u32));
 	}
 }
 
@@ -100,8 +119,6 @@ use std::collections::HashSet;
 use std::time::Duration;
 
 
-
-
 fn handle_input (input : &HashSet<sdl2::keyboard::Keycode>, prev_dir : SnakeDir) -> SnakeDir {
 	if !input.is_empty() {
 		if input.contains (&Keycode::W) {
@@ -133,7 +150,8 @@ fn main() {
 
 	
 	let mut snake_dir = SnakeDir::Up;
-	let map = Map::new();
+	let mut map = Map::new();
+	let mut snake = map.add_snake();
 	
 	MapDrawer::draw(map);
 	
@@ -152,16 +170,12 @@ fn main() {
         let key_press = &keys - &prev_keys;
         let key_released = &prev_keys - &keys;
 		snake_dir = handle_input(&keys, snake_dir);
+		snake.dir = snake_dir.clone();
 
         if !key_press.is_empty() || !key_released.is_empty() {
             //println!("key_press: {:?}\t key_released:{:?}", key_press, key_released);
-			println!("Snake dir: {:?}",snake_dir);
+			println!("Snake dir: {:?}",snake.dir);
         }
-		// if !keys.is_empty() {
-			// println!("down keys: {:?}", keys);
-		// }
-		
-		
 		
 
         prev_keys = keys;
