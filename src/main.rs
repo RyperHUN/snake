@@ -45,8 +45,12 @@ impl MapDrawer {
 		}
 	}
 	fn get_char (map_item : &MapItem) -> char {
-		match map_item {
-			_ => return '_'
+		match *map_item {
+			MapItem::Wall => return '#',
+			MapItem::Food => return '0',
+			MapItem::Empty => return ' ',
+			MapItem::SnakeHead | MapItem::SnakePart => return 'x',
+			_ => return '*'
 		}
 	}
 	
