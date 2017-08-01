@@ -127,12 +127,15 @@ fn main() {
         let keys = events.keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect();
 
         // Get the difference between the new and old sets.
-        let new_keys = &keys - &prev_keys;
-        let old_keys = &prev_keys - &keys;
+        let key_press = &keys - &prev_keys;
+        let key_released = &prev_keys - &keys;
 
-        if !new_keys.is_empty() || !old_keys.is_empty() {
-            println!("new_keys: {:?}\told_keys:{:?}", new_keys, old_keys);
+        if !key_press.is_empty() || !key_released.is_empty() {
+            println!("key_press: {:?}\t key_released:{:?}", key_press, key_released);
         }
+		// if !keys.is_empty() {
+			// println!("down keys: {:?}", keys);
+		// }
 
         prev_keys = keys;
 
