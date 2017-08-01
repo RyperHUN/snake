@@ -13,9 +13,10 @@ enum MapItem {
 	SnakePart,
 }
 
-// enum SnakeDir {
-	// Up,Left,Down, Right
-// }
+#[derive(Debug)]
+enum SnakeDir {
+	Up,Left,Down, Right
+}
 
 
 const SIZE : usize = 10;	
@@ -98,6 +99,27 @@ use sdl2::keyboard::Keycode;
 use std::collections::HashSet;
 use std::time::Duration;
 
+
+
+
+fn handle_input (input : &HashSet<sdl2::keyboard::Keycode>, prev_dir : SnakeDir) -> SnakeDir {
+	if !input.is_empty() {
+		if input.contains (&Keycode::W) {
+			return SnakeDir::Up;
+		}
+		if input.contains (&Keycode::A) {
+			return SnakeDir::Left;
+		}
+		if input.contains (&Keycode::D) {
+			return SnakeDir::Right;
+		}
+		if input.contains (&Keycode::S) {
+			return SnakeDir::Down;
+		}
+	}
+	return prev_dir;
+}
+
 fn main() {
 	let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -110,12 +132,12 @@ fn main() {
         .unwrap();
 
 	
+	let mut snake_dir = SnakeDir::Up;
 	let map = Map::new();
 	
 	MapDrawer::draw(map);
 	
 	let mut prev_keys = HashSet::new();
-
     'running: loop {
         for event in events.poll_iter() {
             if let Event::Quit {..} = event {
@@ -129,13 +151,18 @@ fn main() {
         // Get the difference between the new and old sets.
         let key_press = &keys - &prev_keys;
         let key_released = &prev_keys - &keys;
+		snake_dir = handle_input(&keys, snake_dir);
 
         if !key_press.is_empty() || !key_released.is_empty() {
-            println!("key_press: {:?}\t key_released:{:?}", key_press, key_released);
+            //println!("key_press: {:?}\t key_released:{:?}", key_press, key_released);
+			println!("Snake dir: {:?}",snake_dir);
         }
 		// if !keys.is_empty() {
 			// println!("down keys: {:?}", keys);
 		// }
+		
+		
+		
 
         prev_keys = keys;
 
