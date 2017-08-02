@@ -29,6 +29,17 @@ pub enum SnakeDir {
 	Up,Left,Down, Right
 }
 
+pub fn increase_pos_by_dir (pos : &Vec2,dir : SnakeDir) -> Vec2 {
+	let new_pos;
+	match dir {
+		SnakeDir::Up => new_pos    = pos + vec2(0,-1),
+		SnakeDir::Down => new_pos  = pos + vec2(0,1),
+		SnakeDir::Right => new_pos = pos + vec2(1,0),
+		SnakeDir::Left => new_pos  = pos + vec2(-1,0),
+	}
+	return new_pos;
+}
+
 pub struct PosDir {
 	pos : Vec2,
 	dir : SnakeDir,
@@ -63,6 +74,23 @@ impl Snake {
 		if self.tail.is_empty () {
 			self.tail.push_back(PosDir::new(old_pos,dir));
 		}
+	}
+	pub fn move_tail (&mut self) {
+		if self.tail.is_empty() {
+			return;
+		}
+		let &mut front;
+		match self.tail.front_mut() {
+			Some(i) => front = i,
+			None => return,
+		}
+		front.pos = increase_pos_by_dir (&front.pos, front.dir);
+		front.dir = self.dir.clone();
+		
+		//TODO
+		// for i in 1..self.tail.len() {
+			
+		// }
 	}
 }
 
@@ -108,13 +136,7 @@ impl Map {
 	}
 	
 	pub fn update_snake (&mut self, snake : &mut Snake) {
-		let new_pos;
-		match snake.dir {
-			SnakeDir::Up => new_pos = snake.pos + vec2(0,-1),
-			SnakeDir::Down => new_pos = snake.pos + vec2(0,1),
-			SnakeDir::Right => new_pos = snake.pos + vec2(1,0),
-			SnakeDir::Left => new_pos = snake.pos + vec2(-1,0),
-		}
+		let new_pos = increase_pos_by_dir (&snake.pos, snake.dir.clone());
 		let old_pos = snake.pos.clone();
 		
 		//Save clones of the actual and next item
@@ -132,9 +154,8 @@ impl Map {
 		}
 		if next_item == MapItem::Empty {
 			//Update pos
-			//self.array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::Empty;
 			snake.pos = new_pos;
-			//self.array[new_pos.y as usize][new_pos.x as usize]     = MapItem::SnakeHead;
+			snake.move_tail();
 		}
 		
 		if is_grow {
@@ -179,7 +200,8 @@ impl MapDrawer {
 			MapItem::Wall => return '#',
 			MapItem::Food => return '0',
 			MapItem::Empty => return ' ',
-			MapItem::SnakeHead | MapItem::SnakePart => return 'x',
+			MapItem::SnakeHead => return 'x',
+			MapItem::SnakePart  => return '*',
 			// _ => return '*'
 		}
 	}
