@@ -186,7 +186,7 @@ impl Map {
 		let old_pos = snake.pos.clone();
 		
 		//Save clones of the actual and next item
-		let actual_item     =  self.array[snake.pos.y as usize][snake.pos.x as usize].clone();
+		//let actual_item     =  self.array[snake.pos.y as usize][snake.pos.x as usize].clone();
 		let mut next_item   =  self.array[new_pos.y as usize][new_pos.x as usize].clone();
 		let mut is_grow = false;
 		
@@ -221,14 +221,14 @@ impl Map {
 	}
 	pub fn refresh_map (&mut self, snake : &Snake) {
 		{
-			let ref mut array = self.array; 
-			for i in 0..array.len() { //TODO Refactor with lambda
+			let ref mut array = self.array;
+		    for i in 0..array.len() { //TODO Refactor with lambda
 				for j in 0..array[i].len() {
 					if array[i][j] == MapItem::SnakeHead || array[i][j] == MapItem::SnakePart {
 						array[i][j] = MapItem::Empty;
-					}	
+					}
 				}
-			}
+		    }
 		}
 		self.add(snake.pos,MapItem::SnakeHead);
 		for elem in &snake.tail {
@@ -291,16 +291,16 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 fn handle_input (input : &HashSet<sdl2::keyboard::Keycode>, prev_dir : SnakeDir) -> SnakeDir {
 	if !input.is_empty() {
-		if input.contains (&Keycode::W || &Keycode::Up) {
+		if input.contains (&Keycode::W) || input.contains(&Keycode::Up) {
 			return SnakeDir::Up;
 		}
-		if input.contains (&Keycode::A || &Keycode::Left) {
+		if input.contains (&Keycode::A) || input.contains(&Keycode::Left) {
 			return SnakeDir::Left;
 		}
-		if input.contains (&Keycode::D || &Keycode::Right) {
+		if input.contains (&Keycode::D) || input.contains(&Keycode::Right) {
 			return SnakeDir::Right;
 		}
-		if input.contains (&Keycode::S || &Keycode::Down) {
+		if input.contains (&Keycode::S ) || input.contains (&Keycode::Down) {
 			return SnakeDir::Down;
 		}
 	}
