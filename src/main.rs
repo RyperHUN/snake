@@ -5,6 +5,16 @@ extern crate cgmath;
 use cgmath::Vector2;
 use cgmath::vec2;
 
+use std::collections::LinkedList;
+
+const SIZE : usize = 10;	
+type MapType = [[MapItem; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, size]
+											//Dynamic array: Vec<Vec<Type>>
+
+type Vec2 = Vector2<i32>;
+type List = LinkedList<PosDir>;
+							
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum MapItem {
 	Wall,
@@ -15,19 +25,32 @@ enum MapItem {
 }
 
 #[derive(Debug, Copy, Clone)]
-enum SnakeDir {
+pub enum SnakeDir {
 	Up,Left,Down, Right
+}
+
+pub struct PosDir {
+	pos : Vec2,
+	dir : SnakeDir,
+}
+
+impl PosDir {
+	pub fn new (pos : Vec2, dir : SnakeDir) -> PosDir {
+		return PosDir {pos : pos,dir : dir};
+	}
 }
 
 pub struct Snake {
 	dir : SnakeDir,
 	speed : u8, // 1-10 -> [500ms,100ms] refresh
-	pos : Vector2<i32>,
+	pos : Vec2, //Head pos
+	tail : List,
 }
 
 impl Snake {
 	pub fn new (speed : u8, pos : Vector2<i32>) -> Snake {
-		return Snake {dir : SnakeDir::Up, speed : speed, pos : pos};
+		return Snake {dir : SnakeDir::Up, 
+		speed : speed, pos : pos, tail : List::new()};
 	}
 	pub fn convert_speed_to_ms (&self) -> u64 {
 		match self.speed { //TODO better solution, and complete for all speed
@@ -36,12 +59,15 @@ impl Snake {
 			_ => 250,
 		}
 	}
+	pub fn grow_tail (&mut self, old_pos : Vec2, dir : SnakeDir) {
+		if self.tail.is_empty () {
+			self.tail.push_back(PosDir::new(old_pos,dir));
+		}
+	}
 }
 
  
-const SIZE : usize = 10;	
-type MapType = [[MapItem; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, size]
-											//Dynamic array: Vec<Vec<Type>>
+
 											
 pub struct Map {		
 	array : MapType
@@ -89,23 +115,47 @@ impl Map {
 			SnakeDir::Right => new_pos = snake.pos + vec2(1,0),
 			SnakeDir::Left => new_pos = snake.pos + vec2(-1,0),
 		}
+		let old_pos = snake.pos.clone();
 		
 		//Save clones of the actual and next item
-		let actual_item =  self.array[snake.pos.y as usize][snake.pos.x as usize].clone();
+		let actual_item     =  self.array[snake.pos.y as usize][snake.pos.x as usize].clone();
 		let mut next_item   =  self.array[new_pos.y as usize][new_pos.x as usize].clone();
+		let mut is_grow = false;
 		
 		if next_item == MapItem::Wall {
 			;//TODO Diee
 		}
 		if next_item == MapItem::Food {
 			next_item = MapItem::Empty;
-			//TODO Grow snake size;
+			is_grow = true;
+			//TODO gen new food
 		}
-		if next_item == MapItem::Empty {		
+		if next_item == MapItem::Empty {
 			//Update pos
-			self.array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::Empty;
+			//self.array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::Empty;
 			snake.pos = new_pos;
-			self.array[new_pos.y as usize][new_pos.x as usize]     = MapItem::SnakeHead;
+			//self.array[new_pos.y as usize][new_pos.x as usize]     = MapItem::SnakeHead;
+		}
+		
+		if is_grow {
+			let dir = snake.dir.clone();
+			snake.grow_tail (old_pos, dir);
+			println!("Added snake tail at {}{}", old_pos.y, old_pos.x);
+		}
+		self.refresh_map(&snake);
+	}
+	pub fn refresh_map (&mut self, snake : &Snake) {
+		let ref mut array = self.array; 
+		for i in 0..array.len() { //TODO Refactor with lambda
+			for j in 0..array[i].len() {
+				if array[i][j] == MapItem::SnakeHead || array[i][j] == MapItem::SnakePart {
+					array[i][j] = MapItem::Empty;
+				}	
+			}
+		}
+		array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::SnakeHead;
+		for elem in &snake.tail {
+			array[elem.pos.y as usize][elem.pos.x as usize] = MapItem::SnakePart;
 		}
 	}
 }
