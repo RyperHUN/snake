@@ -22,11 +22,11 @@ enum SnakeDir {
 pub struct Snake {
 	dir : SnakeDir,
 	speed : u8, // 1-10 -> [500ms,100ms] refresh
-	pos : Vector2<u32>,
+	pos : Vector2<i32>,
 }
 
 impl Snake {
-	pub fn new (speed : u8, pos : Vector2<u32>) -> Snake {
+	pub fn new (speed : u8, pos : Vector2<i32>) -> Snake {
 		return Snake {dir : SnakeDir::Up, speed : speed, pos : pos};
 	}
 	pub fn convert_speed_to_ms (&self) -> u64 {
@@ -78,7 +78,21 @@ impl Map {
 		let center_pos = map_size / 2;
 		self.array[center_pos.y][center_pos.y] = MapItem::SnakeHead;
 		
-		return Snake::new(1,vec2(center_pos.y as u32, center_pos.y as u32));
+		return Snake::new(1,vec2(center_pos.y as i32, center_pos.y as i32));
+	}
+	
+	pub fn update_snake (&mut self, snake : &mut Snake) {
+		let new_pos;
+		match snake.dir {
+			SnakeDir::Up => new_pos = snake.pos + vec2(0,-1),
+			SnakeDir::Down => new_pos = snake.pos + vec2(0,1),
+			SnakeDir::Right => new_pos = snake.pos + vec2(1,0),
+			SnakeDir::Left => new_pos = snake.pos + vec2(-1,0),
+		}
+		//TODO if new_pos ++size
+		self.array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::Empty;
+		snake.pos = new_pos;
+		self.array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::SnakeHead;
 	}
 }
 
@@ -86,7 +100,7 @@ pub struct MapDrawer {
 }
 
 impl MapDrawer {
-	pub fn draw_debug(map : Map) {
+	pub fn draw_debug(map : &Map) {
 		let ref array = map.array; 
 		//let array = &self.array; //Same as the above line, just another syntax
 		for i in 0..array.len() {
@@ -106,7 +120,7 @@ impl MapDrawer {
 		}
 	}
 	
-	pub fn draw(map : Map) {
+	pub fn draw(map : &Map) {
 		let ref array = map.array; 
 		for i in 0..array.len() {
 			for j in 0..array[i].len() {
@@ -145,10 +159,10 @@ fn handle_input (input : &HashSet<sdl2::keyboard::Keycode>, prev_dir : SnakeDir)
 
 fn get_time_in_ms () -> u64 {
 	let start = SystemTime::now();
-    let since_the_epoch = start.duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
+	let since_the_epoch = start.duration_since(UNIX_EPOCH)
+		.expect("Time went backwards");
 	let in_ms = since_the_epoch.as_secs() * 1000 +
-            since_the_epoch.subsec_nanos() as u64 / 1_000_000;
+			since_the_epoch.subsec_nanos() as u64 / 1_000_000;
 	return in_ms;
 }
 
@@ -170,7 +184,7 @@ fn main() {
 	
 	let ms_per_update = snake.convert_speed_to_ms ();
 	
-	MapDrawer::draw(map);
+	MapDrawer::draw(&map);
 	
 	let mut last_frame_time = get_time_in_ms();
 	let mut sum_elapsed_time : u64 = 0;
@@ -207,11 +221,15 @@ fn main() {
 		//println!("{:?}", sum_elapsed_time);
 		if sum_elapsed_time > ms_per_update {
 			sum_elapsed_time -= ms_per_update;
-			println!("Step snake");
+			map.update_snake (&mut snake);
+			MapDrawer::draw(&map);
 		}
 
 		//TODO sleep for 60 fps
-		let sleep_time = frame_per_sec_cap - elapsed_time;
+		let mut sleep_time = 0;
+		if elapsed_time < frame_per_sec_cap {
+			sleep_time = frame_per_sec_cap - elapsed_time;
+		}
         std::thread::sleep(Duration::from_millis(sleep_time));
     }
 }
