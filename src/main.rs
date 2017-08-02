@@ -1,6 +1,13 @@
 extern crate rand; //For random number generation
 use rand::Rng;
 
+//RUST mutability guide
+// Rust          C/C++
+    // a: &T     == const T* const a; // can't mutate either
+// mut a: &T     == const T* a;       // can't mutate what is pointed to
+    // a: &mut T == T* const a;       // can't mutate pointer
+// mut a: &mut T == T* a;             // can mutate both
+
 extern crate cgmath;
 use cgmath::Vector2;
 use cgmath::vec2;
@@ -256,8 +263,8 @@ impl MapDrawer {
 			MapItem::Wall => return '#',
 			MapItem::Food => return '0',
 			MapItem::Empty => return ' ',
-			MapItem::SnakeHead => return 'x',
-			MapItem::SnakePart  => return '*',
+			MapItem::SnakeHead => return 'C',
+			MapItem::SnakePart  => return 'x',
 			// _ => return '*'
 		}
 	}
@@ -284,16 +291,16 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 fn handle_input (input : &HashSet<sdl2::keyboard::Keycode>, prev_dir : SnakeDir) -> SnakeDir {
 	if !input.is_empty() {
-		if input.contains (&Keycode::W) {
+		if input.contains (&Keycode::W || &Keycode::Up) {
 			return SnakeDir::Up;
 		}
-		if input.contains (&Keycode::A) {
+		if input.contains (&Keycode::A || &Keycode::Left) {
 			return SnakeDir::Left;
 		}
-		if input.contains (&Keycode::D) {
+		if input.contains (&Keycode::D || &Keycode::Right) {
 			return SnakeDir::Right;
 		}
-		if input.contains (&Keycode::S) {
+		if input.contains (&Keycode::S || &Keycode::Down) {
 			return SnakeDir::Down;
 		}
 	}
