@@ -156,7 +156,14 @@ impl Map {
 		if next_item == MapItem::Food {
 			next_item = MapItem::Empty;
 			is_grow = true;
-			//TODO gen new food
+			//TODO better food gen
+			loop { //add new food
+				let food_pos = gen_random_vec2 ();
+				if (self.get(food_pos) == MapItem::Empty && food_pos != new_pos) {
+					self.add(food_pos, MapItem::Food);
+					break;
+				}
+			}
 		}
 		if next_item == MapItem::Empty {
 			//Update pos
