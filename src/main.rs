@@ -40,6 +40,14 @@ pub fn increase_pos_by_dir (pos : &Vec2,dir : SnakeDir) -> Vec2 {
 	return new_pos;
 }
 
+pub fn gen_random_vec2 () -> Vec2 {
+	let mut rng = rand::thread_rng();
+	let map_size = cgmath::vec2(1,  SIZE - 1);
+	let i = rng.gen_range(map_size.x, map_size.y); 
+	let j = rng.gen_range(map_size.x, map_size.y);
+	return Vec2::new (j as i32, i as i32);
+}
+
 pub struct PosDir {
 	pos : Vec2,
 	dir : SnakeDir,
@@ -103,7 +111,6 @@ pub struct Map {
 
 impl Map {
 	pub fn new () -> Map {
-		let mut rng = rand::thread_rng();
 		let mut map : MapType = [[MapItem::Empty; SIZE ]; SIZE];
 		for i in 0..map.len() {
 			for j in 0..map[i].len() {
@@ -116,12 +123,11 @@ impl Map {
 			}
 		}
 		
-		let map_size = cgmath::vec2(1,  SIZE - 1);
+		
 		
 		//Gen random pos for food
-		let i = rng.gen_range(map_size.x, map_size.y); 
-		let j = rng.gen_range(map_size.x, map_size.y);
-		map[i][j] = MapItem::Food;
+		let food_pos = gen_random_vec2 ();
+		map[food_pos.y as usize][food_pos.x as usize] = MapItem::Food;
 		
 		
 		return Map{array : map};
@@ -184,6 +190,9 @@ impl Map {
 	
 	pub fn add (&mut self ,pos : Vec2, item : MapItem) {
 		self.array[pos.y as usize][pos.x as usize] = item;
+	}
+	pub fn get (&mut self, pos : Vec2) -> MapItem {
+		return self.array[pos.y as usize][pos.x as usize];
 	}
 }
 
