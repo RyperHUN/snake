@@ -5,7 +5,7 @@ extern crate cgmath;
 use cgmath::Vector2;
 use cgmath::vec2;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum MapItem {
 	Wall,
 	Food,
@@ -89,10 +89,24 @@ impl Map {
 			SnakeDir::Right => new_pos = snake.pos + vec2(1,0),
 			SnakeDir::Left => new_pos = snake.pos + vec2(-1,0),
 		}
-		//TODO if new_pos ++size
-		self.array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::Empty;
-		snake.pos = new_pos;
-		self.array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::SnakeHead;
+		
+		//Save clones of the actual and next item
+		let actual_item =  self.array[snake.pos.y as usize][snake.pos.x as usize].clone();
+		let mut next_item   =  self.array[new_pos.y as usize][new_pos.x as usize].clone();
+		
+		if next_item == MapItem::Wall {
+			;//TODO Diee
+		}
+		if next_item == MapItem::Food {
+			next_item = MapItem::Empty;
+			//TODO Grow snake size;
+		}
+		if next_item == MapItem::Empty {		
+			//Update pos
+			self.array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::Empty;
+			snake.pos = new_pos;
+			self.array[new_pos.y as usize][new_pos.x as usize]     = MapItem::SnakeHead;
+		}
 	}
 }
 
@@ -121,6 +135,7 @@ impl MapDrawer {
 	}
 	
 	pub fn draw(map : &Map) {
+		std::process::Command::new("clear").status().unwrap(); //TODO not the best solution for clearing the screen
 		let ref array = map.array; 
 		for i in 0..array.len() {
 			for j in 0..array[i].len() {
