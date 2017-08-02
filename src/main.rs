@@ -16,7 +16,7 @@ type List = LinkedList<PosDir>;
 							
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-enum MapItem {
+pub enum MapItem {
 	Wall,
 	Food,
 	Empty,
@@ -127,12 +127,12 @@ impl Map {
 		return Map{array : map};
 	}
 	pub fn add_snake(&mut self) -> Snake {
-		let map_size = vec2(1,  SIZE - 1);
+		let map_size = Vec2::new(1,  (SIZE - 1) as i32);
 		
-		let center_pos = map_size / 2;
-		self.array[center_pos.y][center_pos.y] = MapItem::SnakeHead;
+		let center_pos = Vec2::new(map_size.y / 2, map_size.y / 2);
+		self.add(center_pos, MapItem::SnakeHead); //TODO this can be removed
 		
-		return Snake::new(1,vec2(center_pos.y as i32, center_pos.y as i32));
+		return Snake::new(1,vec2(center_pos.y, center_pos.y ));
 	}
 	
 	pub fn update_snake (&mut self, snake : &mut Snake) {
@@ -166,18 +166,24 @@ impl Map {
 		self.refresh_map(&snake);
 	}
 	pub fn refresh_map (&mut self, snake : &Snake) {
-		let ref mut array = self.array; 
-		for i in 0..array.len() { //TODO Refactor with lambda
-			for j in 0..array[i].len() {
-				if array[i][j] == MapItem::SnakeHead || array[i][j] == MapItem::SnakePart {
-					array[i][j] = MapItem::Empty;
-				}	
+		{
+			let ref mut array = self.array; 
+			for i in 0..array.len() { //TODO Refactor with lambda
+				for j in 0..array[i].len() {
+					if array[i][j] == MapItem::SnakeHead || array[i][j] == MapItem::SnakePart {
+						array[i][j] = MapItem::Empty;
+					}	
+				}
 			}
 		}
-		array[snake.pos.y as usize][snake.pos.x as usize] = MapItem::SnakeHead;
+		self.add(snake.pos,MapItem::SnakeHead);
 		for elem in &snake.tail {
-			array[elem.pos.y as usize][elem.pos.x as usize] = MapItem::SnakePart;
+			self.add(elem.pos,MapItem::SnakePart);
 		}
+	}
+	
+	pub fn add (&mut self ,pos : Vec2, item : MapItem) {
+		self.array[pos.y as usize][pos.x as usize] = item;
 	}
 }
 
