@@ -48,6 +48,7 @@ pub fn gen_random_vec2 () -> Vec2 {
 	return Vec2::new (j as i32, i as i32);
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct PosDir {
 	pos : Vec2,
 	dir : SnakeDir,
@@ -78,9 +79,11 @@ impl Snake {
 			_ => 250,
 		}
 	}
-	pub fn grow_tail (&mut self, old_pos : Vec2, dir : SnakeDir) {
+	pub fn grow_tail (&mut self, old_pos : Vec2, snake_tail : PosDir, dir : SnakeDir) {
 		if self.tail.is_empty () {
 			self.tail.push_back(PosDir::new(old_pos,dir));
+		} else {
+			self.tail.push_back(snake_tail);
 		}
 	}
 	pub fn move_tail (&mut self) {
@@ -99,6 +102,16 @@ impl Snake {
 		// for i in 1..self.tail.len() {
 			
 		// }
+	}
+	pub fn get_last_tail (&self) -> PosDir {
+		if self.tail.is_empty()  {
+			return PosDir::new (Vec2::new (-1,-1), SnakeDir::Up);
+		} else {
+			match self.tail.back() {
+				Some(i) => return i.clone(),
+				None => panic!("error"),
+			}
+		}
 	}
 }
 
@@ -138,7 +151,7 @@ impl Map {
 		let center_pos = Vec2::new(map_size.y / 2, map_size.y / 2);
 		self.add(center_pos, MapItem::SnakeHead); //TODO this can be removed
 		
-		return Snake::new(1,vec2(center_pos.y, center_pos.y ));
+		return Snake::new(5,vec2(center_pos.y, center_pos.y ));
 	}
 	
 	pub fn update_snake (&mut self, snake : &mut Snake) {
@@ -159,12 +172,13 @@ impl Map {
 			//TODO better food gen
 			loop { //add new food
 				let food_pos = gen_random_vec2 ();
-				if (self.get(food_pos) == MapItem::Empty && food_pos != new_pos) {
+				if self.get(food_pos) == MapItem::Empty && food_pos != new_pos {
 					self.add(food_pos, MapItem::Food);
 					break;
 				}
 			}
 		}
+		let last_tail = snake.get_last_tail ();
 		if next_item == MapItem::Empty {
 			//Update pos
 			snake.pos = new_pos;
@@ -173,7 +187,7 @@ impl Map {
 		
 		if is_grow {
 			let dir = snake.dir.clone();
-			snake.grow_tail (old_pos, dir);
+			snake.grow_tail (old_pos, last_tail, dir);
 			println!("Added snake tail at {}{}", old_pos.y, old_pos.x);
 		}
 		self.refresh_map(&snake);
