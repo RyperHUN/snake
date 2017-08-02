@@ -90,18 +90,38 @@ impl Snake {
 		if self.tail.is_empty() {
 			return;
 		}
-		let &mut front;
-		match self.tail.front_mut() {
-			Some(i) => front = i,
-			None => return,
+		let mut prev_val;
+		{
+			let &mut front;
+			match self.tail.front_mut() {
+				Some(i) => front = i,
+				None => return,
+			}
+			prev_val = front.clone();
+			front.pos = increase_pos_by_dir (&front.pos, front.dir);
+			front.dir = self.dir.clone();
 		}
-		front.pos = increase_pos_by_dir (&front.pos, front.dir);
-		front.dir = self.dir.clone();
 		
 		//TODO
-		// for i in 1..self.tail.len() {
+		let length = self.tail.len().clone();
+		let mut iter = self.tail.iter_mut ();
+		iter.next(); //skip first item, already done
+		
+		let mut val : &mut PosDir;
+		for i in 1..length {
+			let iter_val = iter.next();
+			if let Some(i) = iter_val {
+				val = i;
+			} else {
+				panic!("error");
+			}
+			let temp_actual_val = val.clone();
 			
-		// }
+			val.pos = prev_val.pos;
+			val.dir = prev_val.dir.clone();
+			
+			prev_val = temp_actual_val;
+		}
 	}
 	pub fn get_last_tail (&self) -> PosDir {
 		if self.tail.is_empty()  {
