@@ -16,12 +16,14 @@ use std::collections::LinkedList;
 
 pub mod util;
 use util::MapItem;
+use util::new_item;
+use util::MapStorage;
 use util::SnakeDir;
 use util::is_inverse_dir;
 
 const GOD_MODE : bool = true;
 const SIZE : usize = 14;	
-type MapType = [[MapItem; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, size]
+type MapType = [[MapStorage; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, size]
 											//Dynamic array: Vec<Vec<Type>>
 
 type Vec2 = Vector2<i32>;
@@ -187,21 +189,21 @@ pub struct Map {
 
 impl Map {
 	pub fn new () -> Map {
-		let mut map : MapType = [[MapItem::Empty; SIZE ]; SIZE];
+		let mut map : MapType = [[new_item(MapItem::Empty); SIZE ]; SIZE];
 		for i in 0..map.len() {
 			for j in 0..map[i].len() {
 				if i == 0 || j == 0  || i == SIZE - 1 || j == SIZE - 1 {
-					map[i][j] = MapItem::Wall;
+					map[i][j].item = MapItem::Wall;
 				}
 				else {
-					map[i][j] = MapItem::Empty;
+					map[i][j].item = MapItem::Empty;
 				}
 			}
 		}
 		
 		//Gen random pos for food
 		let food_pos = gen_random_vec2 ();
-		map[food_pos.y as usize][food_pos.x as usize] = MapItem::Food;
+		map[food_pos.y as usize][food_pos.x as usize].item = MapItem::Food;
 		
 		
 		return Map{array : map};
@@ -221,7 +223,7 @@ impl Map {
 		
 		//Save clones of the actual and next item
 		//let actual_item     =  self.array[snake.pos.y as usize][snake.pos.x as usize].clone();
-		let mut next_item   =  self.array[new_pos.y as usize][new_pos.x as usize].clone();
+		let mut next_item   =  self.array[new_pos.y as usize][new_pos.x as usize].item.clone();
 		let mut is_grow = false;
 		
 		if next_item == MapItem::Wall || next_item == MapItem::SnakePart || next_item == MapItem::SnakeFood {
@@ -261,10 +263,10 @@ impl Map {
 			let ref mut array = self.array;
 		    for i in 0..array.len() { //TODO Refactor with lambda
 				for j in 0..array[i].len() {
-					if array[i][j] == MapItem::SnakeHead || 
-						array[i][j] == MapItem::SnakePart ||
-						array[i][j] == MapItem::SnakeFood {
-						array[i][j] = MapItem::Empty;
+					if array[i][j].item == MapItem::SnakeHead || 
+						array[i][j].item == MapItem::SnakePart ||
+						array[i][j].item == MapItem::SnakeFood {
+						array[i][j].item = MapItem::Empty;
 					}
 				}
 		    }
@@ -280,10 +282,10 @@ impl Map {
 	}
 	
 	pub fn add (&mut self ,pos : Vec2, item : MapItem) {
-		self.array[pos.y as usize][pos.x as usize] = item;
+		self.array[pos.y as usize][pos.x as usize].item = item;
 	}
 	pub fn get (&mut self, pos : Vec2) -> MapItem {
-		return self.array[pos.y as usize][pos.x as usize];
+		return self.array[pos.y as usize][pos.x as usize].item;
 	}
 }
 
@@ -324,7 +326,7 @@ impl MapDrawer {
 	 	let ref array = map.array; 
 		for i in 0..array.len() {
 			for j in 0..array[i].len() {
-				print!("{}", MapDrawer::get_char(&array[i][j]));
+				print!("{}", MapDrawer::get_char(&array[i][j].item));
 			}
 			println!("");
 		}
@@ -348,17 +350,17 @@ impl MapDrawer {
 			for j in 0..array[i].len() {
 				renderer.set_draw_color (black);
 				let pos = MapDrawer::ijToScreen(i,j,ELEM_SIZE);
-				if array[i][j] == MapItem::Wall {
+				if array[i][j].item == MapItem::Wall {
 					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
 				}
-				else if array[i][j] == MapItem::Food {
+				else if array[i][j].item == MapItem::Food {
 					let offset = (ELEM_SIZE / 3) as i32;
 					renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y, offset as u32, offset as u32))).expect("Failed to draw rect");
 					renderer.fill_rect(Some(Rect::new(pos.x, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
 					renderer.fill_rect(Some(Rect::new(pos.x + offset * 2, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
 					renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y + offset * 2, offset as u32, offset as u32))).expect("Failed to draw rect");
 				}
-				if array[i][j] == MapItem::SnakeHead {
+				if array[i][j].item == MapItem::SnakeHead {
 					let offset = (ELEM_SIZE / 4) as i32;
 					renderer.set_draw_color (black);
 					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
@@ -386,11 +388,11 @@ impl MapDrawer {
 					}
 				}
 				renderer.set_draw_color (white);
-				if array[i][j] == MapItem::SnakePart {
+				if array[i][j].item == MapItem::SnakePart {
 					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
 				}
 				renderer.set_draw_color (blue);
-				if array[i][j] == MapItem::SnakeFood {
+				if array[i][j].item == MapItem::SnakeFood {
 					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
 				}
 			}

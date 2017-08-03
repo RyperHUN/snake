@@ -28,3 +28,18 @@ pub fn is_inverse_dir (dir1 : SnakeDir, dir2 : SnakeDir) -> bool {
 	}
 	return false;
 }
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct MapStorage {
+	pub dir : SnakeDir,
+	pub item : MapItem,
+}
+
+pub fn new_item (item : MapItem) -> MapStorage {
+	return MapStorage {dir : SnakeDir::None, item : item};
+}
+impl MapStorage {
+	pub fn new (item : MapItem, dir : SnakeDir) -> MapStorage { 
+		return MapStorage {dir : dir, item : item};
+	}
+}
