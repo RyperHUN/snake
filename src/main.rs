@@ -212,7 +212,7 @@ impl Map {
 		let center_pos = Vec2::new(map_size.y / 2, map_size.y / 2);
 		self.add(center_pos, MapItem::SnakeHead); //TODO this can be removed
 		
-		return Snake::new(6,vec2(center_pos.y, center_pos.y ));
+		return Snake::new(1,vec2(center_pos.y, center_pos.y ));
 	}
 	
 	pub fn update_snake (&mut self, snake : &mut Snake) -> bool {
@@ -290,6 +290,12 @@ impl Map {
 pub struct MapDrawer {
 }
 
+extern crate sdl2;
+use sdl2::event::Event;
+use sdl2::rect::Rect;
+use sdl2::pixels::Color;
+use sdl2::render::WindowCanvas;
+
 impl MapDrawer {
 	pub fn draw_debug(map : &Map) {
 		let ref array = map.array; 
@@ -323,13 +329,17 @@ impl MapDrawer {
 			println!("");
 		}
 	}
+	pub fn draw_sdl(map : &Map, renderer : &mut WindowCanvas) {
+		let white = Color::RGB(255, 255, 255);
+		let background = Color::RGB(87, 160, 4);
+		let black = Color::RGB(0,0,0);
+		renderer.set_draw_color (background);
+		renderer.clear();
+		renderer.set_draw_color (black);
+		renderer.fill_rect(Some(Rect::new(100, 100, 150, 150))).expect("Failed to draw rect");
+		renderer.present();
+	}
 }
-
-extern crate sdl2;
-use sdl2::event::Event;
-use sdl2::rect::Rect;
-use sdl2::pixels::Color;
-use sdl2::render::WindowCanvas;
 
 pub mod input;
 pub mod timing;
@@ -347,11 +357,6 @@ fn main() {
         .unwrap();
 		
 	let mut renderer : WindowCanvas = _window.into_canvas().build().unwrap();
-	
-	renderer.clear();
-	renderer.set_draw_color (Color::RGB(100,100,100));
-	renderer.fill_rect(Some(Rect::new(100, 100, 256, 256))).expect("Failed to draw rect");
-	renderer.present();
 
 	
 	let mut snake_dir 	= SnakeDir::None;
@@ -362,6 +367,7 @@ fn main() {
 	let mut timer 		= timing::Timer::new();
 	let mut key_handler = input::KeyHandler::new();
 	
+	MapDrawer::draw_sdl (&map, &mut renderer);
     'running: loop {
         for event in events.poll_iter() {
             if let Event::Quit {..} = event {
@@ -385,6 +391,7 @@ fn main() {
 				break;
 			}
 			MapDrawer::draw_console(&map);
+			
 		}
 		timer.wait_fps_cap();
     }
