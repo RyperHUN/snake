@@ -313,9 +313,9 @@ impl MapDrawer {
 		}
 	}
 	
-	pub fn draw(map : &Map) {
+	pub fn draw_console(map : &Map) {
 		std::process::Command::new("clear").status().unwrap(); //TODO not the best solution for clearing the screen
-		let ref array = map.array; 
+	 	let ref array = map.array; 
 		for i in 0..array.len() {
 			for j in 0..array[i].len() {
 				print!("{}", MapDrawer::get_char(&array[i][j]));
@@ -327,6 +327,9 @@ impl MapDrawer {
 
 extern crate sdl2;
 use sdl2::event::Event;
+use sdl2::rect::Rect;
+use sdl2::pixels::Color;
+use sdl2::render::WindowCanvas;
 
 pub mod input;
 pub mod timing;
@@ -339,8 +342,16 @@ fn main() {
 	//without window the keyboard handling is not working
 	let _window = video_subsystem.window("Snake - Ryper", 800, 600)
         .position_centered()
+		.opengl()
         .build()
         .unwrap();
+		
+	let mut renderer : WindowCanvas = _window.into_canvas().build().unwrap();
+	
+	renderer.clear();
+	renderer.set_draw_color (Color::RGB(100,100,100));
+	renderer.fill_rect(Some(Rect::new(100, 100, 256, 256))).expect("Failed to draw rect");
+	renderer.present();
 
 	
 	let mut snake_dir 	= SnakeDir::None;
@@ -373,7 +384,7 @@ fn main() {
 			if !map.update_snake (&mut snake) {
 				break;
 			}
-			MapDrawer::draw(&map);
+			MapDrawer::draw_console(&map);
 		}
 		timer.wait_fps_cap();
     }
