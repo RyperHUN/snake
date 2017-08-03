@@ -206,13 +206,13 @@ impl Map {
 		
 		return Map{array : map};
 	}
-	pub fn add_snake(&mut self) -> Snake {
+	pub fn add_snake(&mut self, speed : u8) -> Snake {
 		let map_size = Vec2::new(1,  (SIZE - 1) as i32);
 		
 		let center_pos = Vec2::new(map_size.y / 2, map_size.y / 2);
 		self.add(center_pos, MapItem::SnakeHead); //TODO this can be removed
 		
-		return Snake::new(1,vec2(center_pos.y, center_pos.y ));
+		return Snake::new(speed,vec2(center_pos.y, center_pos.y ));
 	}
 	
 	pub fn update_snake (&mut self, snake : &mut Snake) -> bool {
@@ -335,6 +335,8 @@ impl MapDrawer {
 	pub fn draw_sdl(map : &Map, renderer : &mut WindowCanvas) {
 		const ELEM_SIZE : u32 = 25;
 	
+		let red   = Color::RGB(255, 0, 0);
+		let blue  = Color::RGB(0, 0, 255);
 		let white = Color::RGB(255, 255, 255);
 		let background = Color::RGB(87, 160, 4);
 		let black = Color::RGB(0,0,0);
@@ -344,16 +346,29 @@ impl MapDrawer {
 		let ref array = map.array; 
 		for i in 0..array.len() {
 			for j in 0..array[i].len() {
+				renderer.set_draw_color (black);
 				let pos = MapDrawer::ijToScreen(i,j,ELEM_SIZE);
 				if array[i][j] == MapItem::Wall {
 					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
 				}
-				if array[i][j] == MapItem::Food {
+				else if array[i][j] == MapItem::Food {
 					let offset = (ELEM_SIZE / 3) as i32;
 					renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y, offset as u32, offset as u32))).expect("Failed to draw rect");
 					renderer.fill_rect(Some(Rect::new(pos.x, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
 					renderer.fill_rect(Some(Rect::new(pos.x + offset * 2, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
 					renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y + offset * 2, offset as u32, offset as u32))).expect("Failed to draw rect");
+				}
+				renderer.set_draw_color (red);
+				if array[i][j] == MapItem::SnakeHead {
+					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
+				}
+				renderer.set_draw_color (white);
+				if array[i][j] == MapItem::SnakePart {
+					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
+				}
+				renderer.set_draw_color (blue);
+				if array[i][j] == MapItem::SnakeFood {
+					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
 				}
 			}
 			println!("");
@@ -382,7 +397,7 @@ fn main() {
 	
 	let mut snake_dir 	= SnakeDir::None;
 	let mut map       	= Map::new();
-	let mut snake     	= map.add_snake();
+	let mut snake     	= map.add_snake(10);
 	
 	let ms_per_update 	= snake.convert_speed_to_ms ();
 	let mut timer 		= timing::Timer::new();
@@ -412,7 +427,7 @@ fn main() {
 				break;
 			}
 			MapDrawer::draw_console(&map);
-			
+			MapDrawer::draw_sdl (&map, &mut renderer);
 		}
 		timer.wait_fps_cap();
     }
