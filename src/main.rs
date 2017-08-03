@@ -212,7 +212,6 @@ impl Map {
 		let map_size = Vec2::new(1,  (SIZE - 1) as i32);
 		
 		let center_pos = Vec2::new(map_size.y / 2, map_size.y / 2);
-		self.add(center_pos, MapItem::SnakeHead); //TODO this can be removed
 		
 		return Snake::new(speed,vec2(center_pos.y, center_pos.y ));
 	}
@@ -238,7 +237,7 @@ impl Map {
 			loop { //add new food
 				let food_pos = gen_random_vec2 ();
 				if self.get(food_pos) == MapItem::Empty && food_pos != new_pos {
-					self.add(food_pos, MapItem::Food);
+					self.add(food_pos, MapItem::Food, SnakeDir::None);
 					break;
 				}
 			}
@@ -271,18 +270,19 @@ impl Map {
 				}
 		    }
 		}
-		self.add(snake.pos,MapItem::SnakeHead);
+		self.add(snake.pos,MapItem::SnakeHead, snake.dir);
 		for elem in &snake.tail {
 			if elem.is_food {
-				self.add(elem.pos, MapItem::SnakeFood);
+				self.add(elem.pos, MapItem::SnakeFood, SnakeDir::None);
 			} else {
-				self.add(elem.pos,MapItem::SnakePart);
+				self.add(elem.pos,MapItem::SnakePart , elem.dir);
 			}
 		}
 	}
 	
-	pub fn add (&mut self ,pos : Vec2, item : MapItem) {
+	pub fn add (&mut self ,pos : Vec2, item : MapItem, dir : SnakeDir) {
 		self.array[pos.y as usize][pos.x as usize].item = item;
+		self.array[pos.y as usize][pos.x as usize].dir 	= dir;
 	}
 	pub fn get (&mut self, pos : Vec2) -> MapItem {
 		return self.array[pos.y as usize][pos.x as usize].item;
