@@ -59,11 +59,12 @@ pub fn gen_random_vec2 () -> Vec2 {
 pub struct PosDir {
 	pos : Vec2,
 	dir : SnakeDir,
+	is_food : bool
 }
 
 impl PosDir {
 	pub fn new (pos : Vec2, dir : SnakeDir) -> PosDir {
-		return PosDir {pos : pos,dir : dir};
+		return PosDir {pos : pos,dir : dir, is_food : false};
 	}
 }
 
@@ -90,7 +91,10 @@ impl Snake {
 		if self.tail.is_empty () {
 			self.tail.push_back(PosDir::new(old_pos,dir));
 		} else {
-			self.tail.push_back(snake_tail);
+			//self.tail.push_back(snake_tail);
+			if let Some(val) = self.tail.front_mut() {
+				val.is_food = true;
+			}
 		}
 	}
 	pub fn move_tail (&mut self) {
