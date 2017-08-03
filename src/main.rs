@@ -14,7 +14,7 @@ use cgmath::vec2;
 
 use std::collections::LinkedList;
 
-const SIZE : usize = 10;	
+const SIZE : usize = 14;	
 type MapType = [[MapItem; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, size]
 											//Dynamic array: Vec<Vec<Type>>
 
@@ -82,17 +82,24 @@ impl Snake {
 		speed : speed, pos : pos, tail : List::new()};
 	}
 	pub fn convert_speed_to_ms (&self) -> u64 {
-		match self.speed { //TODO better solution, and complete for all speed
-		    1  => 500,
-			10 => 100,
-			_ => 250,
+		match self.speed {
+		    1  	=> 550,
+			2 	=> 500,
+			3	=> 450,
+			4	=> 400,
+			5	=> 350,
+			6	=> 300,
+			7	=> 250,
+			8	=> 200,
+			9	=> 150,
+			10 	=> 100,
+			_ 	=> 250,
 		}
 	}
 	pub fn grow_tail (&mut self, old_pos : Vec2, snake_tail : PosDir, dir : SnakeDir) {
 		if self.tail.is_empty () {
 			self.tail.push_back(PosDir::new(old_pos,dir));
 		} else {
-			//self.tail.push_back(snake_tail);
 			if let Some(val) = self.tail.front_mut() {
 				val.is_food = true;
 			}
