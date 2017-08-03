@@ -329,14 +329,35 @@ impl MapDrawer {
 			println!("");
 		}
 	}
+	pub fn ijToScreen (i : usize, j : usize, ELEM_SIZE : u32) -> Vec2 {
+		return Vec2::new ((j * ELEM_SIZE as usize)as i32, (i * ELEM_SIZE as usize) as i32);
+	}
 	pub fn draw_sdl(map : &Map, renderer : &mut WindowCanvas) {
+		const ELEM_SIZE : u32 = 25;
+	
 		let white = Color::RGB(255, 255, 255);
 		let background = Color::RGB(87, 160, 4);
 		let black = Color::RGB(0,0,0);
 		renderer.set_draw_color (background);
 		renderer.clear();
 		renderer.set_draw_color (black);
-		renderer.fill_rect(Some(Rect::new(100, 100, 150, 150))).expect("Failed to draw rect");
+		let ref array = map.array; 
+		for i in 0..array.len() {
+			for j in 0..array[i].len() {
+				let pos = MapDrawer::ijToScreen(i,j,ELEM_SIZE);
+				if array[i][j] == MapItem::Wall {
+					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
+				}
+				if array[i][j] == MapItem::Food {
+					let offset = (ELEM_SIZE / 3) as i32;
+					renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y, offset as u32, offset as u32))).expect("Failed to draw rect");
+					renderer.fill_rect(Some(Rect::new(pos.x, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
+					renderer.fill_rect(Some(Rect::new(pos.x + offset * 2, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
+					renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y + offset * 2, offset as u32, offset as u32))).expect("Failed to draw rect");
+				}
+			}
+			println!("");
+		}
 		renderer.present();
 	}
 }
