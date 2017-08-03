@@ -127,20 +127,16 @@ impl Snake {
 			let mut iter = self.tail.iter_mut ();
 			iter.next(); //skip first item, already done
 			
-			let mut val : &mut PosDir;
 			for i in 1..length {
 				let iter_val = iter.next();
-				if let Some(i) = iter_val {
-					val = i;
-				} else {
-					panic!("error");
-				}
-				let temp_actual_val = val.clone();
+				if let Some(val) = iter_val {
+					let temp_actual_val = val.clone();
 				
-				val.pos = prev_val.pos;
-				val.dir = prev_val.dir.clone();
-				
-				prev_val = temp_actual_val;
+					val.pos = prev_val.pos;
+					val.dir = prev_val.dir.clone();
+					
+					prev_val = temp_actual_val;
+				} 
 			}
 		}
 		self.move_food(prev_val);
