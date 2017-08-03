@@ -334,6 +334,7 @@ impl MapDrawer {
 	}
 	pub fn draw_sdl(map : &Map,snake : &Snake, renderer : &mut WindowCanvas) {
 		const ELEM_SIZE : u32 = 25;
+		const PADDING   : u32 = 5;
 	
 		let red   = Color::RGB(255, 0, 0);
 		let blue  = Color::RGB(0, 0, 255);
@@ -361,7 +362,11 @@ impl MapDrawer {
 				if array[i][j] == MapItem::SnakeHead {
 					let offset = (ELEM_SIZE / 4) as i32;
 					renderer.set_draw_color (black);
-					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
+					if snake.dir == SnakeDir::Right || snake.dir == SnakeDir::Left {
+						renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE - PADDING))).expect("Failed to draw rect");
+					} else {
+						renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE - PADDING, ELEM_SIZE))).expect("Failed to draw rect");
+					}
 					renderer.set_draw_color (background);
 					//Draw right head
 					if snake.dir == SnakeDir::Right {
