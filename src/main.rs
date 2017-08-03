@@ -14,6 +14,7 @@ use cgmath::vec2;
 
 use std::collections::LinkedList;
 
+const GOD_MODE : bool = true;
 const SIZE : usize = 14;	
 type MapType = [[MapItem; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, size]
 											//Dynamic array: Vec<Vec<Type>>
@@ -228,7 +229,7 @@ impl Map {
 		return Snake::new(5,vec2(center_pos.y, center_pos.y ));
 	}
 	
-	pub fn update_snake (&mut self, snake : &mut Snake) {
+	pub fn update_snake (&mut self, snake : &mut Snake) -> bool {
 		let new_pos = increase_pos_by_dir (&snake.pos, snake.dir.clone());
 		let old_pos = snake.pos.clone();
 		
@@ -237,8 +238,10 @@ impl Map {
 		let mut next_item   =  self.array[new_pos.y as usize][new_pos.x as usize].clone();
 		let mut is_grow = false;
 		
-		if next_item == MapItem::Wall {
-			;//TODO Diee
+		if next_item == MapItem::Wall || next_item == MapItem::SnakePart || next_item == MapItem::SnakeFood {
+			if !GOD_MODE {
+				return false;
+			}	
 		}
 		if next_item == MapItem::Food {
 			next_item = MapItem::Empty;
@@ -265,6 +268,7 @@ impl Map {
 			println!("Added snake tail at {}{}", old_pos.y, old_pos.x);
 		}
 		self.refresh_map(&snake);
+		return true;
 	}
 	pub fn refresh_map (&mut self, snake : &Snake) {
 		{
@@ -425,7 +429,9 @@ fn main() {
 		//println!("{:?}", sum_elapsed_time);
 		if sum_elapsed_time > ms_per_update {
 			sum_elapsed_time -= ms_per_update;
-			map.update_snake (&mut snake);
+			if !map.update_snake (&mut snake) {
+				break;
+			}
 			MapDrawer::draw(&map);
 		}
 
