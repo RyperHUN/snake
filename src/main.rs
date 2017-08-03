@@ -29,6 +29,7 @@ pub enum MapItem {
 	Empty,
 	SnakeHead,
 	SnakePart,
+	SnakeFood,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -113,25 +114,60 @@ impl Snake {
 			front.dir = self.dir.clone();
 		}
 		
-		//TODO
-		let length = self.tail.len().clone();
-		let mut iter = self.tail.iter_mut ();
-		iter.next(); //skip first item, already done
-		
-		let mut val : &mut PosDir;
-		for i in 1..length {
-			let iter_val = iter.next();
-			if let Some(i) = iter_val {
-				val = i;
-			} else {
-				panic!("error");
+		{
+			let length = self.tail.len().clone();
+			let mut iter = self.tail.iter_mut ();
+			iter.next(); //skip first item, already done
+			
+			let mut val : &mut PosDir;
+			for i in 1..length {
+				let iter_val = iter.next();
+				if let Some(i) = iter_val {
+					val = i;
+				} else {
+					panic!("error");
+				}
+				let temp_actual_val = val.clone();
+				
+				val.pos = prev_val.pos;
+				val.dir = prev_val.dir.clone();
+				
+				prev_val = temp_actual_val;
 			}
-			let temp_actual_val = val.clone();
-			
-			val.pos = prev_val.pos;
-			val.dir = prev_val.dir.clone();
-			
-			prev_val = temp_actual_val;
+		}
+		self.move_food(prev_val);
+	}
+	pub fn move_food (&mut self, mut last_elem : PosDir) {
+		let length = self.tail.len().clone();
+		let mut vec : Vec<usize> = Vec::new();
+		{
+			let mut iter = self.tail.iter_mut ();
+			for i in 0..length {
+				let iter_val = iter.next();
+				if let Some(val) = iter_val {
+					if val.is_food {
+						vec.push(i + 1);
+						val.is_food = false;
+					}
+				}
+			}
+		}
+		{
+			let mut iter = self.tail.iter_mut ();
+			for i in 0..length {
+				let iter_val = iter.next();
+				if vec.contains(&i) {
+					if let Some(val) = iter_val {
+						val.is_food = true;
+					}
+				}
+			}
+		}
+		if !vec.is_empty () {
+			if vec[vec.len() - 1] == length {
+				last_elem.is_food = false;
+				self.tail.push_back(last_elem);
+			}
 		}
 	}
 	pub fn get_last_tail (&self) -> PosDir {
@@ -228,7 +264,9 @@ impl Map {
 			let ref mut array = self.array;
 		    for i in 0..array.len() { //TODO Refactor with lambda
 				for j in 0..array[i].len() {
-					if array[i][j] == MapItem::SnakeHead || array[i][j] == MapItem::SnakePart {
+					if array[i][j] == MapItem::SnakeHead || 
+						array[i][j] == MapItem::SnakePart ||
+						array[i][j] == MapItem::SnakeFood {
 						array[i][j] = MapItem::Empty;
 					}
 				}
@@ -236,7 +274,11 @@ impl Map {
 		}
 		self.add(snake.pos,MapItem::SnakeHead);
 		for elem in &snake.tail {
-			self.add(elem.pos,MapItem::SnakePart);
+			if elem.is_food {
+				self.add(elem.pos, MapItem::SnakeFood);
+			} else {
+				self.add(elem.pos,MapItem::SnakePart);
+			}
 		}
 	}
 	
@@ -268,7 +310,8 @@ impl MapDrawer {
 			MapItem::Food => return '0',
 			MapItem::Empty => return ' ',
 			MapItem::SnakeHead => return 'C',
-			MapItem::SnakePart  => return 'x',
+			MapItem::SnakePart => return 'x',
+			MapItem::SnakeFood => return 'z',
 			// _ => return '*'
 		}
 	}
