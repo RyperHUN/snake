@@ -71,6 +71,21 @@ pub struct Snake {
 	tail : List,
 }
 
+//from pos2 to pos1
+pub fn create_dir_from_pos (pos1 : &Vec2, pos2 : &Vec2) -> SnakeDir {
+	let dir_pos = pos2 - pos1;
+	if dir_pos == Vec2::new(0, 1) {
+		return SnakeDir::Down;
+	} else if dir_pos == Vec2::new(0,-1) {
+		return SnakeDir::Up;
+	} else if dir_pos == Vec2::new(1, 0) {
+		return SnakeDir::Right;
+	} else if dir_pos == Vec2::new(-1, 0) {
+		return SnakeDir::Left;
+	}
+	panic!("error invalid pos");
+}
+
 impl Snake {
 	pub fn new (speed : u8, pos : Vector2<i32>) -> Snake {
 		return Snake {dir : SnakeDir::Up, 
@@ -126,8 +141,8 @@ impl Snake {
 				if let Some(val) = iter_val {
 					let temp_actual_val = val.clone();
 				
+					val.dir = create_dir_from_pos (&prev_val.pos, &val.pos);
 					val.pos = prev_val.pos;
-					val.dir = prev_val.dir.clone();
 					
 					prev_val = temp_actual_val;
 				} 
@@ -396,7 +411,7 @@ impl MapDrawer {
 				if array[i][j].item == MapItem::SnakePart {
 					let dir = array[i][j].dir;
 					renderer.set_draw_color (black);
-					if snake.dir == SnakeDir::Right || snake.dir == SnakeDir::Left {
+					if dir == SnakeDir::Right || dir == SnakeDir::Left {
 						renderer.fill_rect(Some(Rect::new(pos.x, pos.y + 1 + PADDING as i32, ELEM_SIZE, ELEM_SIZE - PADDING * 2))).expect("Failed to draw rect");
 					} else {
 						renderer.fill_rect(Some(Rect::new(pos.x + 1 + PADDING as i32, pos.y, ELEM_SIZE - PADDING * 2, ELEM_SIZE))).expect("Failed to draw rect");
@@ -432,7 +447,7 @@ fn main() {
 	
 	let mut snake_dir 	= SnakeDir::None;
 	let mut map       	= Map::new();
-	let mut snake     	= map.add_snake(1);
+	let mut snake     	= map.add_snake(5);
 	
 	let ms_per_update 	= snake.convert_speed_to_ms ();
 	let mut timer 		= timing::Timer::new();
