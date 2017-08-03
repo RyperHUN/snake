@@ -355,24 +355,48 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::collections::HashSet;
 
+type KeyMap = HashSet<sdl2::keyboard::Keycode>;
 
-fn handle_input (input : &HashSet<sdl2::keyboard::Keycode>, prev_dir : SnakeDir) -> SnakeDir {
-	if !input.is_empty() {
-		if input.contains (&Keycode::W) || input.contains(&Keycode::Up) {
-			return SnakeDir::Up;
-		}
-		if input.contains (&Keycode::A) || input.contains(&Keycode::Left) {
-			return SnakeDir::Left;
-		}
-		if input.contains (&Keycode::D) || input.contains(&Keycode::Right) {
-			return SnakeDir::Right;
-		}
-		if input.contains (&Keycode::S ) || input.contains (&Keycode::Down) {
-			return SnakeDir::Down;
-		}
-	}
-	return prev_dir;
+pub struct KeyHandler {
+    prev_keys 		: KeyMap,
+	keys 			: KeyMap,
+	key_press 		: KeyMap,
+	key_released 	: KeyMap,
 }
+
+impl KeyHandler {
+	pub fn new () -> KeyHandler {
+		return KeyHandler {	prev_keys : HashSet::new()	, keys : HashSet::new(),
+							key_press: HashSet::new()	, key_released : HashSet::new()};
+	}
+	pub fn update (&mut self, events : &mut sdl2::EventPump) {
+		self.prev_keys = self.keys.clone();
+		self.keys = events.keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect();
+    
+        self.key_press = &self.keys - &self.prev_keys;
+        self.key_released = &self.prev_keys - &self.keys;
+	}
+	
+	pub fn handle_input (&self , prev_dir : SnakeDir) -> SnakeDir {
+		let ref input = self.keys;
+		if !input.is_empty() {
+			if input.contains (&Keycode::W) || input.contains(&Keycode::Up) {
+				return SnakeDir::Up;
+			}
+			if input.contains (&Keycode::A) || input.contains(&Keycode::Left) {
+				return SnakeDir::Left;
+			}
+			if input.contains (&Keycode::D) || input.contains(&Keycode::Right) {
+				return SnakeDir::Right;
+			}
+			if input.contains (&Keycode::S ) || input.contains (&Keycode::Down) {
+				return SnakeDir::Down;
+			}
+		}
+		return prev_dir;
+	}
+}
+
 
 pub mod timing;
 
@@ -382,7 +406,7 @@ fn main() {
 	let mut events = sdl_context.event_pump().unwrap();
 
 	//without window the keyboard handling is not working
-	let _window = video_subsystem.window("Keyboard", 800, 600)
+	let _window = video_subsystem.window("Snake - Ryper", 800, 600)
         .position_centered()
         .build()
         .unwrap();
@@ -394,8 +418,8 @@ fn main() {
 	
 	let ms_per_update 	= snake.convert_speed_to_ms ();
 	let mut timer 		= timing::Timer::new();
+	let mut key_handler = KeyHandler::new();
 	
-	let mut prev_keys = HashSet::new();
     'running: loop {
         for event in events.poll_iter() {
             if let Event::Quit {..} = event {
@@ -404,17 +428,11 @@ fn main() {
         }
 
         // Create a set of pressed Keys.
-        let keys = events.keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect();
-
-        // Get the difference between the new and old sets.
-        let key_press = &keys - &prev_keys;
-        let key_released = &prev_keys - &keys;
-		let new_dir = handle_input(&keys, snake_dir);
+        key_handler.update(&mut events);
+		let new_dir = key_handler.handle_input(snake_dir);
 		if !is_inverse_dir (snake.dir.clone(), new_dir.clone()) {
 			snake_dir = new_dir;
 		}
-
-        prev_keys = keys;
 		
 		timer.update();
 		if ms_per_update < timer.sum_elapsed_time {
