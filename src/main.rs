@@ -223,8 +223,6 @@ impl Map {
 			}
 		}
 		
-		
-		
 		//Gen random pos for food
 		let food_pos = gen_random_vec2 ();
 		map[food_pos.y as usize][food_pos.x as usize] = MapItem::Food;
@@ -238,7 +236,7 @@ impl Map {
 		let center_pos = Vec2::new(map_size.y / 2, map_size.y / 2);
 		self.add(center_pos, MapItem::SnakeHead); //TODO this can be removed
 		
-		return Snake::new(5,vec2(center_pos.y, center_pos.y ));
+		return Snake::new(6,vec2(center_pos.y, center_pos.y ));
 	}
 	
 	pub fn update_snake (&mut self, snake : &mut Snake) -> bool {
@@ -399,16 +397,13 @@ fn main() {
 
 	
 	let mut snake_dir = SnakeDir::Up;
-	let mut map = Map::new();
-	let mut snake = map.add_snake();
+	let mut map       = Map::new();
+	let mut snake     = map.add_snake();
 	
-	let ms_per_update = snake.convert_speed_to_ms ();
-	
-	MapDrawer::draw(&map);
-	
-	let mut last_frame_time = get_time_in_ms();
+	let ms_per_update              = snake.convert_speed_to_ms ();
+	let mut last_frame_time        = get_time_in_ms();
 	let mut sum_elapsed_time : u64 = 0;
-	let frame_per_sec_cap : u64 = 1000 / 60;
+	let frame_per_sec_cap    : u64 = 1000 / 60;
 	
 	let mut prev_keys = HashSet::new();
     'running: loop {
@@ -429,17 +424,11 @@ fn main() {
 			snake_dir = new_dir;
 		}
 
-        if !key_press.is_empty() || !key_released.is_empty() {
-            ;//println!("key_press: {:?}\t key_released:{:?}", key_press, key_released);
-        }
-		
-
         prev_keys = keys;
 		
 		let elapsed_time = get_time_in_ms() - last_frame_time;
 		last_frame_time  = get_time_in_ms();
 		sum_elapsed_time += elapsed_time;
-		//println!("{:?}", sum_elapsed_time);
 		if sum_elapsed_time > ms_per_update {
 			sum_elapsed_time -= ms_per_update;
 			snake.dir = snake_dir.clone();
@@ -449,11 +438,10 @@ fn main() {
 			MapDrawer::draw(&map);
 		}
 
-		//TODO sleep for 60 fps
 		let mut sleep_time = 0;
-		if elapsed_time < frame_per_sec_cap {
+		if elapsed_time < frame_per_sec_cap { //60 fps cap
 			sleep_time = frame_per_sec_cap - elapsed_time;
 		}
-        std::thread::sleep(Duration::from_millis(sleep_time));
+        std::thread::sleep(Duration::from_millis(sleep_time)); //Sleep for 60 fps
     }
 }
