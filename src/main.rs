@@ -14,6 +14,11 @@ use cgmath::vec2;
 
 use std::collections::LinkedList;
 
+pub mod util;
+use util::MapItem;
+use util::SnakeDir;
+use util::is_inverse_dir;
+
 const GOD_MODE : bool = true;
 const SIZE : usize = 14;	
 type MapType = [[MapItem; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, size]
@@ -21,38 +26,8 @@ type MapType = [[MapItem; SIZE];SIZE]; 	//Fixed size array - 1D array [Type, siz
 
 type Vec2 = Vector2<i32>;
 type List = LinkedList<PosDir>;
-							
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum MapItem {
-	Wall,
-	Food,
-	Empty,
-	SnakeHead,
-	SnakePart,
-	SnakeFood,
-}
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum SnakeDir {
-	Up,Left,Down, Right, None
-}
-
-pub fn is_inverse_dir (dir1 : SnakeDir, dir2 : SnakeDir) -> bool {
-	if dir1 == SnakeDir::Up && dir2 == SnakeDir::Down {
-		return true;
-	}
-	if dir1 == SnakeDir::Down && dir2 == SnakeDir::Up {
-		return true;
-	}	
-	if dir1 == SnakeDir::Left && dir2 == SnakeDir::Right {
-		return true;
-	}
-	if dir1 == SnakeDir::Right && dir2 == SnakeDir::Left {
-		return true;
-	}
-	return false;
-}
 
 pub fn increase_pos_by_dir (pos : &Vec2,dir : SnakeDir) -> Vec2 {
 	let new_pos;
@@ -352,52 +327,8 @@ impl MapDrawer {
 
 extern crate sdl2;
 use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use std::collections::HashSet;
 
-type KeyMap = HashSet<sdl2::keyboard::Keycode>;
-
-pub struct KeyHandler {
-    prev_keys 		: KeyMap,
-	keys 			: KeyMap,
-	key_press 		: KeyMap,
-	key_released 	: KeyMap,
-}
-
-impl KeyHandler {
-	pub fn new () -> KeyHandler {
-		return KeyHandler {	prev_keys : HashSet::new()	, keys : HashSet::new(),
-							key_press: HashSet::new()	, key_released : HashSet::new()};
-	}
-	pub fn update (&mut self, events : &mut sdl2::EventPump) {
-		self.prev_keys = self.keys.clone();
-		self.keys = events.keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect();
-    
-        self.key_press = &self.keys - &self.prev_keys;
-        self.key_released = &self.prev_keys - &self.keys;
-	}
-	
-	pub fn handle_input (&self , prev_dir : SnakeDir) -> SnakeDir {
-		let ref input = self.keys;
-		if !input.is_empty() {
-			if input.contains (&Keycode::W) || input.contains(&Keycode::Up) {
-				return SnakeDir::Up;
-			}
-			if input.contains (&Keycode::A) || input.contains(&Keycode::Left) {
-				return SnakeDir::Left;
-			}
-			if input.contains (&Keycode::D) || input.contains(&Keycode::Right) {
-				return SnakeDir::Right;
-			}
-			if input.contains (&Keycode::S ) || input.contains (&Keycode::Down) {
-				return SnakeDir::Down;
-			}
-		}
-		return prev_dir;
-	}
-}
-
-
+pub mod input;
 pub mod timing;
 
 fn main() {
@@ -418,7 +349,7 @@ fn main() {
 	
 	let ms_per_update 	= snake.convert_speed_to_ms ();
 	let mut timer 		= timing::Timer::new();
-	let mut key_handler = KeyHandler::new();
+	let mut key_handler = input::KeyHandler::new();
 	
     'running: loop {
         for event in events.poll_iter() {
