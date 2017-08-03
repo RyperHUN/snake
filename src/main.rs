@@ -33,9 +33,25 @@ pub enum MapItem {
 	SnakeFood,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SnakeDir {
 	Up,Left,Down, Right
+}
+
+pub fn is_inverse_dir (dir1 : SnakeDir, dir2 : SnakeDir) -> bool {
+	if dir1 == SnakeDir::Up && dir2 == SnakeDir::Down {
+		return true;
+	}
+	if dir1 == SnakeDir::Down && dir2 == SnakeDir::Up {
+		return true;
+	}	
+	if dir1 == SnakeDir::Left && dir2 == SnakeDir::Right {
+		return true;
+	}
+	if dir1 == SnakeDir::Right && dir2 == SnakeDir::Left {
+		return true;
+	}
+	return false;
 }
 
 pub fn increase_pos_by_dir (pos : &Vec2,dir : SnakeDir) -> Vec2 {
@@ -409,11 +425,9 @@ fn main() {
         let key_press = &keys - &prev_keys;
         let key_released = &prev_keys - &keys;
 		snake_dir = handle_input(&keys, snake_dir);
-		snake.dir = snake_dir.clone();
 
         if !key_press.is_empty() || !key_released.is_empty() {
-            //println!("key_press: {:?}\t key_released:{:?}", key_press, key_released);
-			println!("Snake dir: {:?}",snake.dir);
+            ;//println!("key_press: {:?}\t key_released:{:?}", key_press, key_released);
         }
 		
 
@@ -425,6 +439,10 @@ fn main() {
 		//println!("{:?}", sum_elapsed_time);
 		if sum_elapsed_time > ms_per_update {
 			sum_elapsed_time -= ms_per_update;
+			if !is_inverse_dir (snake.dir.clone(), snake_dir.clone()){
+				snake.dir = snake_dir.clone();
+				println!("Snake dir: {:?}",snake.dir);
+			}
 			if !map.update_snake (&mut snake) {
 				break;
 			}
