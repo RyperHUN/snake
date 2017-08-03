@@ -424,7 +424,10 @@ fn main() {
         // Get the difference between the new and old sets.
         let key_press = &keys - &prev_keys;
         let key_released = &prev_keys - &keys;
-		snake_dir = handle_input(&keys, snake_dir);
+		let new_dir = handle_input(&keys, snake_dir);
+		if !is_inverse_dir (snake.dir.clone(), new_dir.clone()) {
+			snake_dir = new_dir;
+		}
 
         if !key_press.is_empty() || !key_released.is_empty() {
             ;//println!("key_press: {:?}\t key_released:{:?}", key_press, key_released);
@@ -439,10 +442,7 @@ fn main() {
 		//println!("{:?}", sum_elapsed_time);
 		if sum_elapsed_time > ms_per_update {
 			sum_elapsed_time -= ms_per_update;
-			if !is_inverse_dir (snake.dir.clone(), snake_dir.clone()){
-				snake.dir = snake_dir.clone();
-				println!("Snake dir: {:?}",snake.dir);
-			}
+			snake.dir = snake_dir.clone();
 			if !map.update_snake (&mut snake) {
 				break;
 			}
