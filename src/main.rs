@@ -35,7 +35,7 @@ pub enum MapItem {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SnakeDir {
-	Up,Left,Down, Right
+	Up,Left,Down, Right, None
 }
 
 pub fn is_inverse_dir (dir1 : SnakeDir, dir2 : SnakeDir) -> bool {
@@ -61,6 +61,7 @@ pub fn increase_pos_by_dir (pos : &Vec2,dir : SnakeDir) -> Vec2 {
 		SnakeDir::Down => new_pos  = pos + vec2(0,1),
 		SnakeDir::Right => new_pos = pos + vec2(1,0),
 		SnakeDir::Left => new_pos  = pos + vec2(-1,0),
+		_ => new_pos = pos.clone(),
 	}
 	return new_pos;
 }
@@ -387,7 +388,7 @@ fn main() {
         .unwrap();
 
 	
-	let mut snake_dir 	= SnakeDir::Up;
+	let mut snake_dir 	= SnakeDir::None;
 	let mut map       	= Map::new();
 	let mut snake     	= map.add_snake();
 	
