@@ -394,6 +394,16 @@ impl MapDrawer {
 			renderer.copy(&textures.head_down, None, snake_rect).unwrap();
 		}
 		
+		for tail in &snake.tail {
+			let pos = MapDrawer::ijToScreen(tail.pos.y as usize,tail.pos.x as usize,ELEM_SIZE);
+			let rect = Some(Rect::new(pos.x,pos.y,ELEM_SIZE,ELEM_SIZE));
+			if tail.dir == SnakeDir::Left || tail.dir == SnakeDir::Right {
+				renderer.copy(&textures.body_right, None, rect).unwrap();
+			} else {
+				renderer.copy(&textures.body_up, None, rect).unwrap();
+			}
+		}
+		
 		renderer.present();
 	}
 }
