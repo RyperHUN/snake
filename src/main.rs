@@ -353,14 +353,14 @@ impl MapDrawer {
 	pub fn ijToScreen (i : usize, j : usize, ELEM_SIZE : u32) -> Vec2 {
 		return Vec2::new ((j * ELEM_SIZE as usize)as i32, (i * ELEM_SIZE as usize) as i32);
 	}
-	pub fn draw_sdl(map : &Map,snake : &Snake, renderer : &mut WindowCanvas) {
-		const ELEM_SIZE : u32 = 25;
-		const PADDING   : u32 = 5;
+	pub fn draw_sdl(map : &Map,snake : &Snake, renderer : &mut WindowCanvas, textures : &util::TextureStorage) {
+		const ELEM_SIZE : u32 = 20;
 	
 		let red   = Color::RGB(255, 0, 0);
 		let blue  = Color::RGB(0, 0, 255);
 		let white = Color::RGB(255, 255, 255);
-		let background = Color::RGB(87, 160, 4);
+		// let background = Color::RGB(87, 160, 4);
+		let background = Color::RGB(62, 150, 53);
 		let black = Color::RGB(0,0,0);
 		renderer.set_draw_color (background);
 		renderer.clear();
@@ -380,53 +380,20 @@ impl MapDrawer {
 					renderer.fill_rect(Some(Rect::new(pos.x + offset * 2, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
 					renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y + offset * 2, offset as u32, offset as u32))).expect("Failed to draw rect");
 				}
-				if array[i][j].item == MapItem::SnakeHead {
-					let offset = (ELEM_SIZE / 4) as i32;
-					renderer.set_draw_color (black);
-					if snake.dir == SnakeDir::Right || snake.dir == SnakeDir::Left {
-						renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE - PADDING))).expect("Failed to draw rect");
-					} else {
-						renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE - PADDING, ELEM_SIZE))).expect("Failed to draw rect");
-					}
-					renderer.set_draw_color (background);
-					//Draw right head
-					if snake.dir == SnakeDir::Right {
-						renderer.fill_rect(Some(Rect::new(pos.x, pos.y, offset as u32, offset as u32))).expect("Failed to draw rect");
-						renderer.fill_rect(Some(Rect::new(pos.x + offset * 2, pos.y, (offset * 3) as u32, offset as u32))).expect("Failed to draw rect");
-						renderer.fill_rect(Some(Rect::new(pos.x + offset * 1, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
-					}
-					if snake.dir == SnakeDir::Left {
-						renderer.fill_rect(Some(Rect::new(pos.x, pos.y, (offset * 2) as u32, offset as u32))).expect("Failed to draw rect");
-						renderer.fill_rect(Some(Rect::new(pos.x + offset * 3, pos.y, (offset * 2) as u32, offset as u32))).expect("Failed to draw rect");
-						renderer.fill_rect(Some(Rect::new(pos.x + offset * 2, pos.y + offset, offset as u32, offset as u32))).expect("Failed to draw rect");
-					}
-					if snake.dir == SnakeDir::Down {
-						renderer.fill_rect(Some(Rect::new(pos.x, pos.y, offset as u32, offset as u32))).expect("Failed to draw rect");
-						renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y + offset, offset  as u32, offset as u32))).expect("Failed to draw rect");
-						renderer.fill_rect(Some(Rect::new(pos.x , pos.y + offset * 2, (offset) as u32, (offset * 3) as u32))).expect("Failed to draw rect");
-					}
-					if snake.dir == SnakeDir::Up {
-						renderer.fill_rect(Some(Rect::new(pos.x, pos.y, offset as u32, (offset * 2) as u32))).expect("Failed to draw rect");
-						renderer.fill_rect(Some(Rect::new(pos.x + offset, pos.y + offset * 2, offset  as u32, offset as u32))).expect("Failed to draw rect");
-						renderer.fill_rect(Some(Rect::new(pos.x , pos.y + offset * 3, (offset) as u32, (offset * 2) as u32))).expect("Failed to draw rect");
-					}
-				}
-
-				if array[i][j].item == MapItem::SnakePart {
-					let dir = array[i][j].dir;
-					renderer.set_draw_color (black);
-					if dir == SnakeDir::Right || dir == SnakeDir::Left {
-						renderer.fill_rect(Some(Rect::new(pos.x, pos.y + 1 + PADDING as i32, ELEM_SIZE, ELEM_SIZE - PADDING * 2))).expect("Failed to draw rect");
-					} else {
-						renderer.fill_rect(Some(Rect::new(pos.x + 1 + PADDING as i32, pos.y, ELEM_SIZE - PADDING * 2, ELEM_SIZE))).expect("Failed to draw rect");
-					}
-				}
-				renderer.set_draw_color (blue);
-				if array[i][j].item == MapItem::SnakeFood {
-					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
-				}
 			}
 		}
+		let snake_pos = MapDrawer::ijToScreen(snake.pos.y as usize,snake.pos.x as usize,ELEM_SIZE);
+		let snake_rect = Some(Rect::new(snake_pos.x,snake_pos.y,ELEM_SIZE,ELEM_SIZE));
+		if snake.dir == SnakeDir::Left {
+			renderer.copy(&textures.head_left, None, snake_rect).unwrap();
+		} else if snake.dir == SnakeDir::Right {
+			renderer.copy(&textures.head_right, None, snake_rect).unwrap();
+		} else if snake.dir == SnakeDir::Up {
+			renderer.copy(&textures.head_up, None, snake_rect).unwrap();
+		} else {
+			renderer.copy(&textures.head_down, None, snake_rect).unwrap();
+		}
+		
 		renderer.present();
 	}
 }
@@ -488,8 +455,7 @@ fn main() {
 				break;
 			}
 			MapDrawer::draw_console(&map);
-			
-			//MapDrawer::draw_sdl (&map,&snake, &mut renderer);
+			MapDrawer::draw_sdl (&map,&snake, &mut renderer, &textures);
 		}
 		timer.wait_fps_cap();
     }
