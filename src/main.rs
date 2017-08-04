@@ -442,6 +442,8 @@ use sdl2::video::WindowContext;
 use sdl2::render::Texture;
 
 pub struct TextureStorage<'r> {
+	head_right : Texture<'r>,
+	head_up : Texture<'r>,
 	head_left : Texture<'r>,
 }
 
@@ -454,17 +456,21 @@ impl ImgLoader {
 		let mut image = lodepng::decode24_file("snake.png").unwrap();
 		let bytes: &[u8] = image.buffer.as_ref().as_bytes();
 	
-		let head_left = ImgLoader::create_texture (bytes, &texture_creator);
+		let head_right = ImgLoader::create_texture (bytes, &texture_creator, 0, 0);
+		let head_up = ImgLoader::create_texture (bytes, &texture_creator, 0, 1);
+		let head_left = ImgLoader::create_texture (bytes, &texture_creator, 1, 0);
 		
-		return TextureStorage{head_left : head_left};
+		return TextureStorage{head_right : head_right, head_up : head_up, head_left :  head_left};
 	}
-	fn create_texture<'r> (img_bytes : &[u8],texture_creator : &'r TextureCreator<WindowContext>) -> sdl2::render::Texture<'r> {
+	fn create_texture<'r> (img_bytes : &[u8],texture_creator : &'r TextureCreator<WindowContext>,
+	selectedi : usize, selectedj : usize) -> sdl2::render::Texture<'r> {
 		let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 20, 20).unwrap();
 		// Create a red-green gradient
 		texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
 			for y in 0..20 {
+				let block_size = 20;
 				let width = 80;
-				let pic_start_offset = y * width * 3;
+				let pic_start_offset = y * width * 3 + selectedj * block_size * 3 + selectedi * width * 3;
 				for x in 0..20 {
 					let offset = y*pitch + x*3;
 					let pic_offset = pic_start_offset + x * 3;
