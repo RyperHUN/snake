@@ -437,6 +437,48 @@ extern crate lodepng;
 extern crate rgb;
 use rgb::*;
 use sdl2::pixels::PixelFormatEnum;
+use sdl2::render::TextureCreator;
+use sdl2::video::WindowContext;
+use sdl2::render::Texture;
+
+pub struct TextureStorage<'r> {
+	head_left : Texture<'r>,
+}
+
+struct ImgLoader {
+
+}
+
+impl ImgLoader {
+	pub fn build_textures<'a> (texture_creator : &'a TextureCreator<WindowContext>) -> TextureStorage {
+		let mut image = lodepng::decode24_file("snake.png").unwrap();
+		let bytes: &[u8] = image.buffer.as_ref().as_bytes();
+	
+		let head_left = ImgLoader::create_texture (bytes, &texture_creator);
+		
+		return TextureStorage{head_left : head_left};
+	}
+	fn create_texture<'r> (img_bytes : &[u8],texture_creator : &'r TextureCreator<WindowContext>) -> sdl2::render::Texture<'r> {
+		let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 20, 20).unwrap();
+		// Create a red-green gradient
+		texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
+			for y in 0..20 {
+				let width = 80;
+				let pic_start_offset = y * width * 3;
+				for x in 0..20 {
+					let offset = y*pitch + x*3;
+					let pic_offset = pic_start_offset + x * 3;
+					buffer[offset + 0] = img_bytes[pic_offset + 0];
+					buffer[offset + 1] = img_bytes[pic_offset + 1];
+					buffer[offset + 2] = img_bytes[pic_offset + 2];
+				}
+			}
+		}).unwrap();
+		
+		return texture;
+	}
+}
+
 
 
 fn main() {
@@ -452,29 +494,12 @@ fn main() {
         .unwrap();
 		
 	let mut renderer : WindowCanvas = _window.into_canvas().build().unwrap();
-	
-	let mut image = lodepng::decode24_file("snake.png").unwrap();
-	let bytes: &[u8] = image.buffer.as_ref().as_bytes();
-	
 	let texture_creator = renderer.texture_creator();
-	let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 20, 20).unwrap();
-    // Create a red-green gradient
-    texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
-        for y in 0..20 {
-			let width = 80;
-			let pic_start_offset = y * width * 3;
-            for x in 0..20 {
-                let offset = y*pitch + x*3;
-				let pic_offset = pic_start_offset + x * 3;
-                buffer[offset + 0] = bytes[pic_offset + 0];
-                buffer[offset + 1] = bytes[pic_offset + 1];
-                buffer[offset + 2] = bytes[pic_offset + 2];
-            }
-        }
-    }).unwrap();
+	
+	let textures  = ImgLoader::build_textures (&texture_creator);
 	
 	renderer.clear();
-	renderer.copy(&texture, None, Some(Rect::new(100,100,20,20))).unwrap();
+	renderer.copy(&textures.head_left, None, Some(Rect::new(100,100,20,20))).unwrap();
 	renderer.present();
 
 	
