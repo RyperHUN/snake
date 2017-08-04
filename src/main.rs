@@ -433,6 +433,12 @@ impl MapDrawer {
 pub mod input;
 pub mod timing;
 
+extern crate lodepng;
+extern crate rgb;
+use rgb::*;
+use sdl2::pixels::PixelFormatEnum;
+
+
 fn main() {
 	let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -446,6 +452,27 @@ fn main() {
         .unwrap();
 		
 	let mut renderer : WindowCanvas = _window.into_canvas().build().unwrap();
+	
+	let mut image = lodepng::decode24_file("snake.png").unwrap();
+	let bytes: &[u8] = image.buffer.as_ref().as_bytes();
+	
+	let texture_creator = renderer.texture_creator();
+	let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 80, 60).unwrap();
+    // Create a red-green gradient
+    texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
+        for y in 0..60 {
+            for x in 0..80 {
+                let offset = y*pitch + x*3;
+                buffer[offset + 0] = bytes[offset + 0];
+                buffer[offset + 1] = bytes[offset + 1];
+                buffer[offset + 2] = bytes[offset + 2];
+            }
+        }
+    }).unwrap();
+	
+	renderer.clear();
+	renderer.copy(&texture, None, Some(Rect::new(100,100,80,60))).unwrap();
+	renderer.present();
 
 	
 	let mut snake_dir 	= SnakeDir::None;
@@ -479,7 +506,8 @@ fn main() {
 				break;
 			}
 			MapDrawer::draw_console(&map);
-			MapDrawer::draw_sdl (&map,&snake, &mut renderer);
+			
+			//MapDrawer::draw_sdl (&map,&snake, &mut renderer);
 		}
 		timer.wait_fps_cap();
     }

@@ -7,3 +7,5 @@ authors = ["Ryperhun <akormanyzsolt@gmail.com>"]
 rand = "0.3"
 cgmath = "0.15.0"
 sdl2 = "0.30.0"
+lodepng = "1.1.3"
+rgb = "0.7.0"
