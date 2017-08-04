@@ -82,7 +82,7 @@ pub struct ImgLoader {
 
 impl ImgLoader {
 	pub fn build_textures<'a> (texture_creator : &'a TextureCreator<WindowContext>) -> TextureStorage {
-		let mut image = lodepng::decode24_file("snake.png").unwrap();
+		let image = lodepng::decode24_file("snake.png").unwrap();
 		let bytes: &[u8] = image.buffer.as_ref().as_bytes();
 	
 		let head_right 	= ImgLoader::create_texture (bytes, &texture_creator, 0, 0);

@@ -108,9 +108,9 @@ impl Snake {
 			_ 	=> 250,
 		}
 	}
-	pub fn grow_tail (&mut self, old_pos : Vec2, snake_tail : PosDir, dir : SnakeDir) {
+	pub fn grow_tail (&mut self, old_pos : Vec2) {
 		if self.tail.is_empty () {
-			self.tail.push_back(PosDir::new(old_pos,dir));
+			self.tail.push_back(PosDir::new(old_pos,self.dir));
 		} else {
 			if let Some(val) = self.tail.front_mut() {
 				val.is_food = true;
@@ -261,7 +261,6 @@ impl Map {
 				}
 			}
 		}
-		let last_tail = snake.get_last_tail ();
 		if next_item == MapItem::Empty {
 			//Update pos
 			snake.pos = new_pos;
@@ -269,8 +268,7 @@ impl Map {
 		}
 		
 		if is_grow {
-			let dir = snake.dir.clone();
-			snake.grow_tail (old_pos, last_tail, dir);
+			snake.grow_tail (old_pos);
 			println!("Added snake tail at {}{}", old_pos.y, old_pos.x);
 		}
 		self.refresh_map(&snake);
@@ -350,16 +348,13 @@ impl MapDrawer {
 			println!("");
 		}
 	}
-	pub fn ijToScreen (i : usize, j : usize, ELEM_SIZE : u32) -> Vec2 {
-		return Vec2::new ((j * ELEM_SIZE as usize)as i32, (i * ELEM_SIZE as usize) as i32);
+	pub fn ij_to_screen (i : usize, j : usize, elem_size : u32) -> Vec2 {
+		return Vec2::new ((j * elem_size as usize)as i32, (i * elem_size as usize) as i32);
 	}
 	pub fn draw_sdl(map : &Map,snake : &Snake, renderer : &mut WindowCanvas, textures : &util::TextureStorage) {
 		const ELEM_SIZE : u32 = 20;
 	
-		let red   = Color::RGB(255, 0, 0);
-		let blue  = Color::RGB(0, 0, 255);
-		let white = Color::RGB(255, 255, 255);
-		// let background = Color::RGB(87, 160, 4);
+		// let background = Color::RGB(87, 160, 4); old background 
 		let background = Color::RGB(62, 150, 53);
 		let black = Color::RGB(0,0,0);
 		renderer.set_draw_color (background);
@@ -369,7 +364,7 @@ impl MapDrawer {
 		for i in 0..array.len() {
 			for j in 0..array[i].len() {
 				renderer.set_draw_color (black);
-				let pos = MapDrawer::ijToScreen(i,j,ELEM_SIZE);
+				let pos = MapDrawer::ij_to_screen(i,j,ELEM_SIZE);
 				if array[i][j].item == MapItem::Wall {
 					renderer.fill_rect(Some(Rect::new(pos.x, pos.y, ELEM_SIZE, ELEM_SIZE))).expect("Failed to draw rect");
 				}
@@ -382,7 +377,7 @@ impl MapDrawer {
 				}
 			}
 		}
-		let snake_pos = MapDrawer::ijToScreen(snake.pos.y as usize,snake.pos.x as usize,ELEM_SIZE);
+		let snake_pos = MapDrawer::ij_to_screen(snake.pos.y as usize,snake.pos.x as usize,ELEM_SIZE);
 		let snake_rect = Some(Rect::new(snake_pos.x,snake_pos.y,ELEM_SIZE,ELEM_SIZE));
 		if snake.dir == SnakeDir::Left {
 			renderer.copy(&textures.head_left, None, snake_rect).unwrap();
@@ -395,7 +390,7 @@ impl MapDrawer {
 		}
 		
 		for tail in &snake.tail {
-			let pos = MapDrawer::ijToScreen(tail.pos.y as usize,tail.pos.x as usize,ELEM_SIZE);
+			let pos = MapDrawer::ij_to_screen(tail.pos.y as usize,tail.pos.x as usize,ELEM_SIZE);
 			let rect = Some(Rect::new(pos.x,pos.y,ELEM_SIZE,ELEM_SIZE));
 			if tail.dir == tail.prev_dir {
 				if tail.dir == SnakeDir::Left || tail.dir == SnakeDir::Right {
@@ -441,7 +436,7 @@ impl MapDrawer {
 						renderer.copy(&textures.body_left_up, None, rect).unwrap();
 					}
 				}
-			}
+			} 
 		}
 		
 		renderer.present();
