@@ -55,12 +55,13 @@ pub fn gen_random_vec2 () -> Vec2 {
 pub struct PosDir {
 	pos : Vec2,
 	dir : SnakeDir,
+	prev_dir : SnakeDir,
 	is_food : bool
 }
 
 impl PosDir {
 	pub fn new (pos : Vec2, dir : SnakeDir) -> PosDir {
-		return PosDir {pos : pos,dir : dir, is_food : false};
+		return PosDir {pos : pos,dir : dir, is_food : false, prev_dir : dir};
 	}
 }
 
@@ -126,9 +127,10 @@ impl Snake {
 				Some(i) => front = i,
 				None => return,
 			}
-			prev_val = front.clone();
-			front.pos = increase_pos_by_dir (&front.pos, front.dir);
-			front.dir = self.dir.clone();
+			prev_val 		= front.clone();
+			front.pos 		= increase_pos_by_dir (&front.pos, front.dir);
+			front.prev_dir  = front.dir;
+			front.dir 		= self.dir.clone();
 		}
 		
 		{
@@ -143,6 +145,7 @@ impl Snake {
 				
 					val.dir = create_dir_from_pos (&prev_val.pos, &val.pos);
 					val.pos = prev_val.pos;
+					val.prev_dir = val.dir;
 					
 					prev_val = temp_actual_val;
 				} 
