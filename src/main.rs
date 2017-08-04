@@ -20,6 +20,7 @@ use util::new_item;
 use util::MapStorage;
 use util::SnakeDir;
 use util::is_inverse_dir;
+use util::ImgLoader;
 
 const GOD_MODE : bool = true;
 const SIZE : usize = 14;	
@@ -432,80 +433,6 @@ impl MapDrawer {
 
 pub mod input;
 pub mod timing;
-
-extern crate lodepng;
-extern crate rgb;
-use rgb::*;
-use sdl2::pixels::PixelFormatEnum;
-use sdl2::render::TextureCreator;
-use sdl2::video::WindowContext;
-use sdl2::render::Texture;
-
-pub struct TextureStorage<'r> {
-	head_down	 : Texture<'r>,
-	head_up 	 : Texture<'r>,
-	head_left 	 : Texture<'r>,
-	head_right	 : Texture<'r>,
-	
-	body_right 	: Texture<'r>,
-	body_up 	: Texture<'r>,
-	
-	body_left_up	: Texture<'r>,
-	body_right_up 	: Texture<'r>,
-	body_left_down 	: Texture<'r>,
-	body_right_down : Texture<'r>,
-}
-
-struct ImgLoader {
-
-}
-
-impl ImgLoader {
-	pub fn build_textures<'a> (texture_creator : &'a TextureCreator<WindowContext>) -> TextureStorage {
-		let mut image = lodepng::decode24_file("snake.png").unwrap();
-		let bytes: &[u8] = image.buffer.as_ref().as_bytes();
-	
-		let head_right 	= ImgLoader::create_texture (bytes, &texture_creator, 0, 0);
-		let head_up 	= ImgLoader::create_texture (bytes, &texture_creator, 0, 1);
-		let head_left 	= ImgLoader::create_texture (bytes, &texture_creator, 1, 0);
-		let head_down 	= ImgLoader::create_texture (bytes, &texture_creator, 1, 1);
-		
-		let body_right 	= ImgLoader::create_texture (bytes, &texture_creator, 0, 2);
-		let body_up 	= ImgLoader::create_texture (bytes, &texture_creator, 1, 2);
-		
-		let body_left_up 	= ImgLoader::create_texture (bytes, &texture_creator, 2, 2);
-		let body_right_up 	= ImgLoader::create_texture (bytes, &texture_creator, 2, 3);
-		let body_left_down 	= ImgLoader::create_texture (bytes, &texture_creator, 2, 1);
-		let body_right_down	= ImgLoader::create_texture (bytes, &texture_creator, 0, 3);
-		
-		return TextureStorage{	head_right : head_right, 		head_up : head_up, 				head_left :  head_left,
-								head_down : head_down, 			body_right : body_right, 		body_up : body_up,
-								body_left_up : body_left_up, 	body_right_up : body_right_up,	body_left_down : body_left_down,
-								body_right_down : body_right_down};
-	}
-	fn create_texture<'r> (img_bytes : &[u8],texture_creator : &'r TextureCreator<WindowContext>,
-	selectedi : usize, selectedj : usize) -> sdl2::render::Texture<'r> {
-		let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 20, 20).unwrap();
-		// Create a red-green gradient
-		texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
-			for y in 0..20 {
-				let block_size = 20;
-				let width = 80;
-				let pic_start_offset = y * width * 3 + selectedj * block_size * 3 + selectedi * width * 3;
-				for x in 0..20 {
-					let offset = y*pitch + x*3;
-					let pic_offset = pic_start_offset + x * 3;
-					buffer[offset + 0] = img_bytes[pic_offset + 0];
-					buffer[offset + 1] = img_bytes[pic_offset + 1];
-					buffer[offset + 2] = img_bytes[pic_offset + 2];
-				}
-			}
-		}).unwrap();
-		
-		return texture;
-	}
-}
-
 
 
 fn main() {
