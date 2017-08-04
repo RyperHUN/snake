@@ -397,10 +397,26 @@ impl MapDrawer {
 		for tail in &snake.tail {
 			let pos = MapDrawer::ijToScreen(tail.pos.y as usize,tail.pos.x as usize,ELEM_SIZE);
 			let rect = Some(Rect::new(pos.x,pos.y,ELEM_SIZE,ELEM_SIZE));
-			if tail.dir == SnakeDir::Left || tail.dir == SnakeDir::Right {
-				renderer.copy(&textures.body_right, None, rect).unwrap();
+			if tail.dir == tail.prev_dir {
+				if tail.dir == SnakeDir::Left || tail.dir == SnakeDir::Right {
+					renderer.copy(&textures.body_right, None, rect).unwrap();
+				} else {
+					renderer.copy(&textures.body_up, None, rect).unwrap();
+				}
 			} else {
-				renderer.copy(&textures.body_up, None, rect).unwrap();
+				if (tail.prev_dir == SnakeDir::Right && tail.dir == SnakeDir::Up) ||
+					(tail.prev_dir == SnakeDir::Down && tail.dir == SnakeDir::Left) {
+					renderer.copy(&textures.body_right_up, None, rect).unwrap();
+				} else if (tail.prev_dir == SnakeDir::Right && tail.dir == SnakeDir::Down)  ||
+					(tail.prev_dir == SnakeDir::Up && tail.dir == SnakeDir::Left) {
+					renderer.copy(&textures.body_right_down, None, rect).unwrap();
+				} else if (tail.prev_dir == SnakeDir::Left && tail.dir == SnakeDir::Down) ||
+					(tail.prev_dir == SnakeDir::Up && tail.dir == SnakeDir::Right){
+					renderer.copy(&textures.body_left_down, None, rect).unwrap();
+				} else if (tail.prev_dir == SnakeDir::Left && tail.dir == SnakeDir::Up ) || 
+					(tail.prev_dir == SnakeDir::Down && tail.dir == SnakeDir::Right){
+					renderer.copy(&textures.body_left_up, None, rect).unwrap();
+				}
 			}
 		}
 		
