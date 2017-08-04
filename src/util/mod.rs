@@ -102,7 +102,7 @@ impl ImgLoader {
 		texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
 			for y in 0..20 {
 				let block_size = 20;
-				let width = 80;
+				let width = 100;
 				let pic_start_offset = y * width * 3 + selectedj * block_size * 3 + selectedi * width * 3 * block_size;
 				for x in 0..20 {
 					let offset = y*pitch + x*3;
