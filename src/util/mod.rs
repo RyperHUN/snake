@@ -66,6 +66,14 @@ pub struct TextureStorage<'r> {
 	pub body_right_up 	: Texture<'r>,
 	pub body_left_down 	: Texture<'r>,
 	pub body_right_down : Texture<'r>,
+	
+	pub body_right_food 	: Texture<'r>,
+	pub body_up_food	 	: Texture<'r>,
+	
+	pub body_left_up_food	 : Texture<'r>,
+	pub body_right_up_food 	 : Texture<'r>,
+	pub body_left_down_food  : Texture<'r>,
+	pub body_right_down_food : Texture<'r>,
 }
 
 pub struct ImgLoader {
@@ -90,10 +98,21 @@ impl ImgLoader {
 		let body_left_down 	= ImgLoader::create_texture (bytes, &texture_creator, 2, 1);
 		let body_right_down	= ImgLoader::create_texture (bytes, &texture_creator, 0, 3);
 		
+		let body_right_food 	= ImgLoader::create_texture (bytes, &texture_creator, 0, 4);
+		let body_up_food 		= ImgLoader::create_texture (bytes, &texture_creator, 2, 4);
+		
+		let body_left_up_food 		= ImgLoader::create_texture (bytes, &texture_creator, 3, 1);
+		let body_right_up_food 		= ImgLoader::create_texture (bytes, &texture_creator, 3, 4);
+		let body_left_down_food 	= ImgLoader::create_texture (bytes, &texture_creator, 3, 0);
+		let body_right_down_food	= ImgLoader::create_texture (bytes, &texture_creator, 1, 4);
+		
 		return TextureStorage{	head_right : head_right, 		head_up : head_up, 				head_left :  head_left,
 								head_down : head_down, 			body_right : body_right, 		body_up : body_up,
 								body_left_up : body_left_up, 	body_right_up : body_right_up,	body_left_down : body_left_down,
-								body_right_down : body_right_down};
+								body_right_down : body_right_down, 	body_right_food : body_right_food,
+								body_up_food : body_up_food, 		body_left_up_food : body_left_up_food,
+								body_right_up_food : body_right_up_food,body_left_down_food : body_left_down_food,
+								body_right_down_food : body_right_down_food};
 	}
 	fn create_texture<'r> (img_bytes : &[u8],texture_creator : &'r TextureCreator<WindowContext>,
 	selectedi : usize, selectedj : usize) -> sdl2::render::Texture<'r> {
