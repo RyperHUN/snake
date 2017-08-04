@@ -144,9 +144,9 @@ impl Snake {
 				if let Some(val) = iter_val {
 					let temp_actual_val = val.clone();
 				
-					val.dir = create_dir_from_pos (&prev_val.pos, &val.pos);
-					val.pos = prev_val.pos;
 					val.prev_dir = val.dir;
+					val.dir = prev_val.dir;
+					val.pos = prev_val.pos;
 					
 					prev_val = temp_actual_val;
 				} 
@@ -452,7 +452,7 @@ fn main() {
 	
 	let mut snake_dir 	= SnakeDir::None;
 	let mut map       	= Map::new();
-	let mut snake     	= map.add_snake(5);
+	let mut snake     	= map.add_snake(7);
 	
 	let ms_per_update 	= snake.convert_speed_to_ms ();
 	let mut timer 		= timing::Timer::new();
