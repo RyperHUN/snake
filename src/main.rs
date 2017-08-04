@@ -457,21 +457,24 @@ fn main() {
 	let bytes: &[u8] = image.buffer.as_ref().as_bytes();
 	
 	let texture_creator = renderer.texture_creator();
-	let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 80, 60).unwrap();
+	let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 20, 20).unwrap();
     // Create a red-green gradient
     texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
-        for y in 0..60 {
-            for x in 0..80 {
+        for y in 0..20 {
+			let width = 80;
+			let pic_start_offset = y * width * 3;
+            for x in 0..20 {
                 let offset = y*pitch + x*3;
-                buffer[offset + 0] = bytes[offset + 0];
-                buffer[offset + 1] = bytes[offset + 1];
-                buffer[offset + 2] = bytes[offset + 2];
+				let pic_offset = pic_start_offset + x * 3;
+                buffer[offset + 0] = bytes[pic_offset + 0];
+                buffer[offset + 1] = bytes[pic_offset + 1];
+                buffer[offset + 2] = bytes[pic_offset + 2];
             }
         }
     }).unwrap();
 	
 	renderer.clear();
-	renderer.copy(&texture, None, Some(Rect::new(100,100,80,60))).unwrap();
+	renderer.copy(&texture, None, Some(Rect::new(100,100,20,20))).unwrap();
 	renderer.present();
 
 	
